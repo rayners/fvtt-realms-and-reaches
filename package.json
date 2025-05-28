@@ -2,6 +2,7 @@
   "name": "realms-and-reaches",
   "version": "0.1.0", 
   "description": "A queryable biome and terrain layer for Foundry VTT",
+  "type": "module",
   "main": "dist/module.js",
   "scripts": {
     "build": "rollup -c",
