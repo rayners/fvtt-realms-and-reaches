@@ -1,5 +1,7 @@
 # Realms & Reaches
 
+[![Test Module](https://github.com/rayners/fvtt-realms-and-reaches/actions/workflows/test.yml/badge.svg)](https://github.com/rayners/fvtt-realms-and-reaches/actions/workflows/test.yml)
+
 > **🚧 Alpha Development**: This module is in active development. Features and APIs may change.
 
 A Foundry VTT module that provides a queryable biome and terrain layer for narrative-driven gameplay, exploration mechanics, and system integration.
