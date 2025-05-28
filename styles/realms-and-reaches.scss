@@ -1,0 +1,61 @@
+/**
+ * Realms & Reaches - Main Stylesheet
+ * 
+ * Styles for the realm layer, UI components, and visual elements.
+ */
+
+/* Base module styles */
+.realms-and-reaches {
+  /* Module-specific styles will go here */
+}
+
+/* Realm layer controls */
+.control-tool[data-tool="realms"] {
+  /* Styling for the realm layer control button */
+}
+
+/* Realm drawing tools */
+.realm-tools {
+  /* Styling for realm drawing and editing tools */
+}
+
+/* Realm properties panel */
+.realm-properties {
+  /* Styling for the realm properties editor */
+}
+
+/* Realm visual rendering */
+.realm-polygon {
+  /* Styling for rendered realm polygons */
+  stroke: #4a90e2;
+  stroke-width: 2;
+  fill: rgba(74, 144, 226, 0.1);
+  cursor: pointer;
+  
+  &:hover {
+    fill: rgba(74, 144, 226, 0.2);
+  }
+  
+  &.selected {
+    stroke: #f39c12;
+    fill: rgba(243, 156, 18, 0.2);
+  }
+}
+
+/* Tag editor styles */
+.tag-editor {
+  /* Styling for tag input and display */
+}
+
+.tag-item {
+  /* Individual tag styling */
+  background: #e9ecef;
+  border-radius: 3px;
+  padding: 2px 6px;
+  margin: 2px;
+  display: inline-block;
+  
+  &.tag-biome { background: #d4edda; }
+  &.tag-terrain { background: #f8d7da; }
+  &.tag-custom { background: #e2e3e5; }
+}

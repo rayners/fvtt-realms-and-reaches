@@ -1,0 +1,66 @@
+{
+  "REALMS_AND_REACHES": {
+    "ModuleTitle": "Realms & Reaches",
+    "ModuleDescription": "A queryable biome and terrain layer for narrative-driven gameplay",
+    
+    "Layer": {
+      "Title": "Realms",
+      "Tooltip": "Toggle the Realms layer for editing biome and terrain regions"
+    },
+    
+    "Tools": {
+      "Draw": "Draw Realm",
+      "Select": "Select Realm", 
+      "Edit": "Edit Realm",
+      "Delete": "Delete Realm",
+      "Export": "Export Realm Data",
+      "Import": "Import Realm Data"
+    },
+    
+    "Properties": {
+      "Title": "Realm Properties",
+      "Name": "Name",
+      "Tags": "Tags",
+      "AddTag": "Add Tag",
+      "RemoveTag": "Remove Tag",
+      "Save": "Save",
+      "Cancel": "Cancel",
+      "Delete": "Delete Realm"
+    },
+    
+    "Tags": {
+      "Biome": "Biome",
+      "Terrain": "Terrain", 
+      "Climate": "Climate",
+      "TravelSpeed": "Travel Speed",
+      "Resources": "Resources",
+      "Custom": "Custom"
+    },
+    
+    "Messages": {
+      "RealmCreated": "Realm '{name}' created successfully",
+      "RealmUpdated": "Realm '{name}' updated successfully", 
+      "RealmDeleted": "Realm '{name}' deleted successfully",
+      "ExportSuccess": "Realm data exported successfully",
+      "ImportSuccess": "Realm data imported successfully",
+      "InvalidTag": "Invalid tag format. Use 'key:value' pattern.",
+      "NoRealmsFound": "No realms found at this location",
+      "ConfirmDelete": "Are you sure you want to delete realm '{name}'?"
+    },
+    
+    "Settings": {
+      "DefaultBiome": {
+        "Name": "Default Biome",
+        "Hint": "Default biome type for new realms"
+      },
+      "ShowLabels": {
+        "Name": "Show Realm Labels", 
+        "Hint": "Display realm names on the canvas"
+      },
+      "AutoSave": {
+        "Name": "Auto-save Changes",
+        "Hint": "Automatically save realm changes"
+      }
+    }
+  }
+}

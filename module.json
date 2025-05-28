@@ -1,0 +1,43 @@
+{
+  "id": "realms-and-reaches",
+  "title": "Realms & Reaches",
+  "description": "A queryable biome and terrain layer for narrative-driven gameplay, exploration mechanics, and system integration. Create detailed realm data that other modules can query for travel, encounters, and environmental effects.",
+  "version": "0.1.0",
+  "compatibility": {
+    "minimum": "13",
+    "verified": "13"
+  },
+  "authors": [
+    {
+      "name": "David Raynes",
+      "email": "rayners@gmail.com",
+      "discord": "rayners78"
+    }
+  ],
+  "esmodules": ["module.js"],
+  "styles": ["styles/realms-and-reaches.css"],
+  "packs": [],
+  "languages": [
+    {
+      "lang": "en",
+      "name": "English",
+      "path": "languages/en.json"
+    }
+  ],
+  "relationships": {
+    "recommends": [
+      {
+        "id": "journeys-and-jamborees",
+        "type": "module",
+        "reason": "Enhanced travel mechanics with realm-based modifiers"
+      }
+    ]
+  },
+  "socket": false,
+  "url": "https://github.com/rayners/fvtt-realms-and-reaches",
+  "manifest": "https://github.com/rayners/fvtt-realms-and-reaches/releases/download/v0.1.0/module.json",
+  "download": "https://github.com/rayners/fvtt-realms-and-reaches/releases/download/v0.1.0/module.zip",
+  "documentation": "https://docs.rayners.dev/realms-and-reaches",
+  "bugs": "https://github.com/rayners/fvtt-realms-and-reaches/issues",
+  "changelog": "https://github.com/rayners/fvtt-realms-and-reaches/blob/main/CHANGELOG.md"
+}
