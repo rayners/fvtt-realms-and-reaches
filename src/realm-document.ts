@@ -1,6 +1,6 @@
 /**
  * RealmDocument - Custom Foundry document for Realms
- * 
+ *
  * Based on BaseRegion and RegionDocument but with realm-specific fields.
  */
 
@@ -25,32 +25,38 @@ export default class RealmDocument {
 export function createRealmDocumentClasses() {
   const BaseRegion = foundry.documents.BaseRegion;
   const CanvasDocumentMixin = foundry.abstract.CanvasDocumentMixin;
-  
+
   // Extend BaseRegion
   class BaseRealmImpl extends BaseRegion {
     /** @override */
-    static metadata = Object.freeze(foundry.utils.mergeObject(super.metadata, {
-      name: "Realm",
-      collection: "realms",
-      label: "DOCUMENT.Realm", 
-      labelPlural: "DOCUMENT.Realms"
-    }, {inplace: false}));
+    static metadata = Object.freeze(
+      foundry.utils.mergeObject(
+        super.metadata,
+        {
+          name: 'Realm',
+          collection: 'realms',
+          label: 'DOCUMENT.Realm',
+          labelPlural: 'DOCUMENT.Realms'
+        },
+        { inplace: false }
+      )
+    );
 
     /** @override */
     static defineSchema() {
       const baseSchema = super.defineSchema();
       const fields = foundry.data.fields;
-      
+
       // Add realm-specific fields to the base Region schema
       return foundry.utils.mergeObject(baseSchema, {
         tags: new fields.ArrayField(new fields.StringField(), {
           initial: [],
-          label: "Realm Tags"
+          label: 'Realm Tags'
         }),
         metadata: new fields.SchemaField({
-          author: new fields.StringField({initial: "Unknown"}),
-          created: new fields.NumberField({initial: () => Date.now()}),
-          modified: new fields.NumberField({initial: () => Date.now()})
+          author: new fields.StringField({ initial: 'Unknown' }),
+          created: new fields.NumberField({ initial: () => Date.now() }),
+          modified: new fields.NumberField({ initial: () => Date.now() })
         })
       });
     }
@@ -88,13 +94,13 @@ export function createRealmDocumentClasses() {
       const tags = [...this.getTags()];
       if (!tags.includes(tag)) {
         tags.push(tag);
-        await this.update({tags});
+        await this.update({ tags });
       }
     }
 
     async removeTag(tag: string) {
       const tags = this.getTags().filter((t: string) => t !== tag);
-      await this.update({tags});
+      await this.update({ tags });
     }
   }
 

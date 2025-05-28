@@ -9,7 +9,7 @@ import { TagSystem } from './tag-system';
 // Type for realm regions
 type RealmRegion = RegionDocument & {
   flags: {
-    "realms-and-reaches"?: {
+    'realms-and-reaches'?: {
       isRealm?: boolean;
       tags?: string[];
       metadata?: {
@@ -24,7 +24,7 @@ type RealmRegion = RegionDocument & {
 // Helper functions
 class RealmHelpers {
   static getTags(region: RealmRegion): string[] {
-    return region.flags["realms-and-reaches"]?.tags || [];
+    return region.flags['realms-and-reaches']?.tags || [];
   }
 
   static hasTag(region: RealmRegion, tag: string): boolean {
@@ -56,21 +56,27 @@ export function getAllRealms(): RealmRegion[] {
  * Get realms by tag
  */
 export function getRealmsByTag(tag: string): RealmRegion[] {
-  return RealmManager.getInstance().getAllRealms().filter(realm => RealmHelpers.hasTag(realm, tag));
+  return RealmManager.getInstance()
+    .getAllRealms()
+    .filter(realm => RealmHelpers.hasTag(realm, tag));
 }
 
 /**
  * Get realms by tag key (e.g., 'biome' returns all realms with biome tags)
  */
 export function getRealmsByTagKey(key: string): RealmRegion[] {
-  return RealmManager.getInstance().getAllRealms().filter(realm => RealmHelpers.getTag(realm, key) !== null);
+  return RealmManager.getInstance()
+    .getAllRealms()
+    .filter(realm => RealmHelpers.getTag(realm, key) !== null);
 }
 
 /**
  * Get available tag suggestions for a namespace
  */
 export function getTagSuggestions(namespace: string, excludeTags: string[] = []): string[] {
-  return TagSystem.getInstance().getSuggestions(namespace, excludeTags).map(s => s.tag);
+  return TagSystem.getInstance()
+    .getSuggestions(namespace, excludeTags)
+    .map(s => s.tag);
 }
 
 /**
@@ -95,16 +101,19 @@ export async function createRealm(realmData: {
 /**
  * Update an existing realm
  */
-export async function updateRealm(realmId: string, updates: {
-  name?: string;
-  shapes?: any[];
-  tags?: string[];
-  color?: string;
-}): Promise<RealmRegion | null> {
+export async function updateRealm(
+  realmId: string,
+  updates: {
+    name?: string;
+    shapes?: any[];
+    tags?: string[];
+    color?: string;
+  }
+): Promise<RealmRegion | null> {
   const manager = RealmManager.getInstance();
   const realm = manager.getRealm(realmId);
   if (!realm) return null;
-  
+
   await manager.updateRealm(realm, updates);
   return realm;
 }

@@ -1,6 +1,6 @@
 /**
  * RealmData - Core data structure for storing realm information
- * 
+ *
  * Manages realm geometry, tags, and metadata with efficient tag-based queries.
  */
 
@@ -48,7 +48,7 @@ export class RealmData {
       points: []
     };
     this._tags = new Set(options.tags || []);
-    
+
     const now = new Date().toISOString();
     this.metadata = {
       created: now,
@@ -122,15 +122,15 @@ export class RealmData {
     if (!this.isValidTag(tag)) {
       throw new Error(`Invalid tag format: "${tag}". Use "key:value" pattern.`);
     }
-    
+
     // For single-value namespaces, remove existing tag with same key
     const [key] = tag.split(':', 2);
     const singleValueKeys = ['biome', 'climate', 'travel_speed', 'elevation'];
-    
+
     if (singleValueKeys.includes(key)) {
       this.removeTagByKey(key);
     }
-    
+
     this._tags.add(tag);
     this.touch();
   }
@@ -164,15 +164,15 @@ export class RealmData {
   removeTagByKey(key: string): number {
     const tagPrefix = `${key}:`;
     const toRemove = Array.from(this._tags).filter(tag => tag.startsWith(tagPrefix));
-    
+
     for (const tag of toRemove) {
       this._tags.delete(tag);
     }
-    
+
     if (toRemove.length > 0) {
       this.touch();
     }
-    
+
     return toRemove.length;
   }
 
@@ -226,17 +226,19 @@ export class RealmData {
       case 'polygon': {
         const points = this.geometry.points || [];
         if (points.length < 6) return { x: 0, y: 0, width: 0, height: 0 };
-        
-        let minX = points[0], maxX = points[0];
-        let minY = points[1], maxY = points[1];
-        
+
+        let minX = points[0],
+          maxX = points[0];
+        let minY = points[1],
+          maxY = points[1];
+
         for (let i = 2; i < points.length; i += 2) {
           minX = Math.min(minX, points[i]);
           maxX = Math.max(maxX, points[i]);
           minY = Math.min(minY, points[i + 1]);
           maxY = Math.max(maxY, points[i + 1]);
         }
-        
+
         return {
           x: minX,
           y: minY,
@@ -282,12 +284,12 @@ export class RealmData {
     if (colonIndex <= 0 || colonIndex >= tag.length - 1) {
       return false;
     }
-    
+
     // No additional colons allowed
     if (tag.indexOf(':', colonIndex + 1) !== -1) {
       return false;
     }
-    
+
     // Basic character validation
     const validPattern = /^[a-zA-Z0-9_-]+:[a-zA-Z0-9_.-]+$/;
     return validPattern.test(tag);
@@ -298,21 +300,21 @@ export class RealmData {
    */
   private pointInPolygon(x: number, y: number, points: number[]): boolean {
     if (points.length < 6) return false; // Need at least 3 points (6 coordinates)
-    
+
     let inside = false;
     const numPoints = points.length / 2;
-    
+
     for (let i = 0, j = numPoints - 1; i < numPoints; j = i++) {
       const xi = points[i * 2];
       const yi = points[i * 2 + 1];
       const xj = points[j * 2];
       const yj = points[j * 2 + 1];
-      
-      if (((yi > y) !== (yj > y)) && (x < (xj - xi) * (y - yi) / (yj - yi) + xi)) {
+
+      if (yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) {
         inside = !inside;
       }
     }
-    
+
     return inside;
   }
 
@@ -321,13 +323,14 @@ export class RealmData {
    */
   private pointInRectangle(x: number, y: number): boolean {
     const { x: cx = 0, y: cy = 0, width = 0, height = 0, rotation = 0 } = this.geometry;
-    
+
     if (rotation === 0) {
       // Simple case - no rotation
       const halfWidth = width / 2;
       const halfHeight = height / 2;
-      return x >= cx - halfWidth && x <= cx + halfWidth &&
-             y >= cy - halfHeight && y <= cy + halfHeight;
+      return (
+        x >= cx - halfWidth && x <= cx + halfWidth && y >= cy - halfHeight && y <= cy + halfHeight
+      );
     } else {
       // Rotate the point back to axis-aligned space
       const cos = Math.cos(-rotation);
@@ -336,11 +339,15 @@ export class RealmData {
       const dy = y - cy;
       const rotatedX = dx * cos - dy * sin;
       const rotatedY = dx * sin + dy * cos;
-      
+
       const halfWidth = width / 2;
       const halfHeight = height / 2;
-      return rotatedX >= -halfWidth && rotatedX <= halfWidth &&
-             rotatedY >= -halfHeight && rotatedY <= halfHeight;
+      return (
+        rotatedX >= -halfWidth &&
+        rotatedX <= halfWidth &&
+        rotatedY >= -halfHeight &&
+        rotatedY <= halfHeight
+      );
     }
   }
 
@@ -351,7 +358,7 @@ export class RealmData {
     const { x: cx = 0, y: cy = 0, radius = 0 } = this.geometry;
     const dx = x - cx;
     const dy = y - cy;
-    return (dx * dx + dy * dy) <= (radius * radius);
+    return dx * dx + dy * dy <= radius * radius;
   }
 
   // Serialization

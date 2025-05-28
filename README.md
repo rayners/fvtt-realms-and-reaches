@@ -31,6 +31,7 @@ A Foundry VTT module that provides a queryable biome and terrain layer for narra
 **🚀 Alpha Release**: Core functionality complete and ready for testing!
 
 ### What's Working
+
 - ✅ **Tag-based realm data** with 8 core namespaces (biome, terrain, climate, etc.)
 - ✅ **Spatial queries** - Fast point-in-polygon detection for coordinate-based lookups
 - ✅ **Data persistence** - Automatic saving to scene flags with export/import
@@ -41,6 +42,7 @@ A Foundry VTT module that provides a queryable biome and terrain layer for narra
 - ✅ **Layer controls** - Integrated drawing tools in Foundry's left sidebar
 
 ### Next Steps
+
 - 📋 **Module integration** - J&J travel mechanics enhancement (ready to implement)
 - 📋 **Community features** - Data sharing and browsing improvements
 - 📋 **Performance optimization** - Large dataset handling enhancements
@@ -53,7 +55,7 @@ const manager = RealmManager.getInstance();
 const realm = manager.getRealmAt(x, y);
 
 if (realm) {
-  const biome = realm.getTag('biome');        // "forest"
+  const biome = realm.getTag('biome'); // "forest"
   const speed = realm.getTagNumber('travel_speed'); // 0.75
   const isHaunted = realm.hasTag('custom:haunted'); // true/false
 }
@@ -61,7 +63,7 @@ if (realm) {
 // Create a new realm programmatically
 await manager.createRealm({
   name: 'Dark Forest',
-  geometry: { type: 'polygon', points: [0,0, 100,0, 100,100, 0,100] },
+  geometry: { type: 'polygon', points: [0, 0, 100, 0, 100, 100, 0, 100] },
   tags: ['biome:forest', 'terrain:dense', 'travel_speed:0.5', 'custom:haunted']
 });
 ```
@@ -98,16 +100,19 @@ await manager.createRealm({
 ### Drawing Realms
 
 #### Polygon Tool
+
 - **Click** to add points to your polygon
 - **Right-click** or **Enter** to complete the polygon
 - **Escape** to cancel drawing
 - Great for: Irregular biome boundaries, coastlines, mountain ranges
 
 #### Rectangle Tool
+
 - **Click** the first corner, then **click** the opposite corner
 - Perfect for: Structured regions, urban areas, farmland
 
-#### Circle Tool  
+#### Circle Tool
+
 - **Click** the center, then **click** to set the radius
 - Ideal for: Points of interest, magical effects, blast zones
 
@@ -116,10 +121,12 @@ await manager.createRealm({
 Double-click any realm or use the Properties button to open the editor:
 
 #### Name Field
+
 - Give your realm a descriptive name like "Ancient Forest" or "Goblin Territory"
 - Names help organize and identify realms during gameplay
 
 #### Tag Editor
+
 - **Add Tags**: Type in the format `key:value` (e.g., `biome:forest`)
 - **Autocomplete**: Start typing to see suggestions
 - **Color Coding**: Tags are automatically colored by namespace
@@ -127,9 +134,10 @@ Double-click any realm or use the Properties button to open the editor:
 - **Validation**: Invalid tags show red borders with error tooltips
 
 #### Common Tag Patterns
+
 ```
 biome:forest           # Primary ecosystem
-terrain:dense          # Movement difficulty  
+terrain:dense          # Movement difficulty
 travel_speed:0.75      # Speed modifier (1.0 = normal)
 climate:temperate      # Weather patterns
 resources:timber       # Available materials
@@ -145,7 +153,7 @@ The Realms & Reaches control panel provides:
 
 - **Select Tool**: Click to select and edit existing realms
 - **Polygon Tool**: Draw irregular shapes
-- **Rectangle Tool**: Draw rectangular regions  
+- **Rectangle Tool**: Draw rectangular regions
 - **Circle Tool**: Draw circular areas
 - **Properties**: Edit the selected realm (or double-click)
 - **Export**: Save realm data to JSON file
@@ -175,18 +183,19 @@ Realms use a flexible tag-based system instead of fixed properties:
 ```javascript
 // Example realm tags
 [
-  "biome:forest",           // Core biome type
-  "terrain:dense",          // Terrain difficulty
-  "travel_speed:0.75",      // Movement modifier
-  "climate:temperate",      // Weather patterns
-  "resources:timber",       // Available resources
-  "resources:game",         // Huntable animals
-  "custom:haunted",         // Custom properties
-  "module:jj:encounter_chance:0.3"  // Module-specific data
-]
+  'biome:forest', // Core biome type
+  'terrain:dense', // Terrain difficulty
+  'travel_speed:0.75', // Movement modifier
+  'climate:temperate', // Weather patterns
+  'resources:timber', // Available resources
+  'resources:game', // Huntable animals
+  'custom:haunted', // Custom properties
+  'module:jj:encounter_chance:0.3' // Module-specific data
+];
 ```
 
 This system allows:
+
 - **Flexibility**: Add any properties you need
 - **Extensibility**: Modules can define their own tag conventions
 - **Future-proofing**: No breaking changes when adding new features
@@ -205,7 +214,7 @@ if (realm) {
   const speedMod = parseFloat(realm.getTag('travel_speed')) || 1.0;
   const biome = realm.getTag('biome');
   const climate = realm.getTag('climate');
-  
+
   // Apply to your game mechanics
   adjustedTravelSpeed *= speedMod;
   encounterTable = getEncounterTable(biome);
@@ -225,7 +234,7 @@ if (realm) {
 ### Import Realm Data
 
 1. Download realm data files from the community
-2. Open the Realms layer  
+2. Open the Realms layer
 3. Click **Import** in the realm tools
 4. Select the JSON file and preview changes
 5. Choose **Merge**, **Replace**, or **Skip** for conflicts
@@ -262,7 +271,7 @@ if (realmsAPI) {
   // Query realm data
   const realm = realmsAPI.getRealmAt(x, y);
   const biome = realm?.getTag('biome');
-  
+
   // Apply to your module's mechanics
   if (biome === 'desert') {
     applyDesertEffects();
@@ -295,6 +304,7 @@ if (realmsAPI) {
 ## Development Roadmap
 
 ### v0.1.0 - MVP (✅ COMPLETED)
+
 - ✅ **Tag-based data system** - Complete with validation, suggestions, conflict detection
 - ✅ **Spatial indexing** - Fast point-in-polygon queries (< 1ms)
 - ✅ **Data persistence** - Scene flags storage with export/import
@@ -304,13 +314,15 @@ if (realmsAPI) {
 - ✅ **UI integration** - Full layer controls integration with Foundry
 
 ### v0.2.0 - Enhanced UX
+
 - 🔲 Smart tag editor with dropdowns
-- 🔲 Tag templates and presets  
+- 🔲 Tag templates and presets
 - 🔲 Visual realm overlay toggle
 - 🔲 Bulk operations (select multiple realms)
 - 🔲 Enhanced J&J integration
 
 ### v0.3.0 - Community Features
+
 - 🔲 Community data browser
 - 🔲 Tag validation and suggestions
 - 🔲 Realm data versioning
@@ -318,6 +330,7 @@ if (realmsAPI) {
 - 🔲 Module API documentation
 
 ### v1.0.0 - Stable Release
+
 - 🔲 Complete documentation
 - 🔲 Performance optimizations
 - 🔲 Comprehensive test coverage

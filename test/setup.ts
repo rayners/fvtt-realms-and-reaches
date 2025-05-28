@@ -1,6 +1,6 @@
 /**
  * Test setup for Realms & Reaches
- * 
+ *
  * Configures the testing environment with mocks for Foundry VTT globals.
  */
 
@@ -10,7 +10,7 @@ import { vi } from 'vitest';
 global.foundry = {
   utils: {
     mergeObject: vi.fn((original, other) => ({ ...original, ...other })),
-    duplicate: vi.fn((obj) => JSON.parse(JSON.stringify(obj))),
+    duplicate: vi.fn(obj => JSON.parse(JSON.stringify(obj))),
     randomID: vi.fn(() => Math.random().toString(36).substr(2, 9))
   }
 };
@@ -29,7 +29,7 @@ global.game = {
     isGM: true
   },
   i18n: {
-    localize: vi.fn((key) => key)
+    localize: vi.fn(key => key)
   }
 };
 
@@ -70,11 +70,11 @@ global.CanvasLayer = class MockCanvasLayer {
     this.options = options;
     this.name = options.name || 'mock';
   }
-  
+
   static get layerOptions() {
     return {};
   }
-  
+
   activate() {}
   deactivate() {}
   draw() {}

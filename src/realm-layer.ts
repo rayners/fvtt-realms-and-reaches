@@ -1,6 +1,6 @@
 /**
  * RealmLayer - Custom canvas layer for drawing and editing realm polygons
- * 
+ *
  * Extends Foundry's PlaceablesLayer to provide spatial editing tools for realms.
  * Inherits all the drawing functionality from RegionLayer but stores data in scene flags.
  * Integrates with RealmManager for data persistence and spatial queries.
@@ -10,7 +10,7 @@ import { RealmManager } from './realm-manager';
 import { RealmData } from './realm-data';
 
 // RegionLayer access - will be available at runtime
-declare const RegionLayer: any;
+declare const _RegionLayer: any;
 
 // Lazy import to avoid circular dependency
 let RealmPropertiesDialog: any;
@@ -45,24 +45,24 @@ export class RealmLayer extends (globalThis.foundry?.canvas?.layers?.RegionLayer
   }
 
   /** @override */
-  static documentName = "Realm"; // Use Realm documents
+  static documentName = 'Realm'; // Use Realm documents
 
   // Layer state
   private drawingState: DrawingState = DrawingState.IDLE;
   private activeTool: DrawingTool = DrawingTool.SELECT;
   private currentPolygon: number[] = []; // [x1, y1, x2, y2, ...]
   private selectedRealm: RealmData | null = null;
-  
+
   // PIXI graphics objects for realm rendering
   private realmGraphics = new Map<string, PIXI.Graphics>(); // realmId -> graphics
-  
+
   // RealmManager integration
   private realmManager: RealmManager;
 
   constructor() {
     super();
     this.realmManager = RealmManager.getInstance();
-    
+
     // Listen for realm data changes
     this.realmManager.addEventListener('realmCreated', this.onRealmCreated.bind(this));
     this.realmManager.addEventListener('realmUpdated', this.onRealmUpdated.bind(this));
@@ -76,7 +76,7 @@ export class RealmLayer extends (globalThis.foundry?.canvas?.layers?.RegionLayer
   async _draw(options: any = {}) {
     // Call RegionLayer's _draw to get all the built-in functionality
     await super._draw(options);
-    
+
     // Draw existing realms using our custom rendering
     this.drawAllRealms();
   }
@@ -85,7 +85,7 @@ export class RealmLayer extends (globalThis.foundry?.canvas?.layers?.RegionLayer
   async _tearDown(options: any = {}) {
     // Clean up our custom graphics objects
     this.realmGraphics.clear();
-    
+
     // Call RegionLayer's teardown
     await super._tearDown(options);
   }
@@ -94,10 +94,10 @@ export class RealmLayer extends (globalThis.foundry?.canvas?.layers?.RegionLayer
   _activate() {
     // Call RegionLayer's activation
     super._activate();
-    
+
     // Show realm controls
     this.updateUI();
-    
+
     // Refresh realm display
     this.refresh();
   }
@@ -106,10 +106,10 @@ export class RealmLayer extends (globalThis.foundry?.canvas?.layers?.RegionLayer
   _deactivate() {
     // Cancel any active drawing
     this.cancelDrawing();
-    
-    // Call RegionLayer's deactivation  
+
+    // Call RegionLayer's deactivation
     super._deactivate();
-    
+
     // Hide realm controls
     this.updateUI();
   }
@@ -148,7 +148,7 @@ export class RealmLayer extends (globalThis.foundry?.canvas?.layers?.RegionLayer
    */
   startDrawing(): void {
     if (this.activeTool === DrawingTool.SELECT) return;
-    
+
     this.drawingState = DrawingState.DRAWING;
     this.currentPolygon = [];
     this.selectedRealm = null;
@@ -204,7 +204,7 @@ export class RealmLayer extends (globalThis.foundry?.canvas?.layers?.RegionLayer
   /** @override */
   _onClickLeft(event: PIXI.InteractionEvent): boolean | void {
     const position = this.getSnappedPoint(event.data.global);
-    
+
     switch (this.drawingState) {
       case DrawingState.IDLE:
         this.handleIdleClick(position, event);
@@ -216,12 +216,12 @@ export class RealmLayer extends (globalThis.foundry?.canvas?.layers?.RegionLayer
         this.handleSelectingClick(position, event);
         break;
     }
-    
+
     return true;
   }
 
   /** @override */
-  _onClickRight(event: PIXI.InteractionEvent): boolean | void {
+  _onClickRight(_event: PIXI.InteractionEvent): boolean | void {
     // Right-click to complete drawing or cancel
     if (this.drawingState === DrawingState.DRAWING) {
       if (this.currentPolygon.length >= 6) {
@@ -232,7 +232,7 @@ export class RealmLayer extends (globalThis.foundry?.canvas?.layers?.RegionLayer
     } else {
       this.cancelDrawing();
     }
-    
+
     return true;
   }
 
@@ -240,7 +240,7 @@ export class RealmLayer extends (globalThis.foundry?.canvas?.layers?.RegionLayer
   _onMouseMove(event: PIXI.InteractionEvent): void {
     // Let RegionLayer handle mouse move for drawing previews
     super._onMouseMove?.(event);
-    
+
     if (this.drawingState === DrawingState.DRAWING) {
       // Custom logic if needed
     }
@@ -250,12 +250,12 @@ export class RealmLayer extends (globalThis.foundry?.canvas?.layers?.RegionLayer
   _onDoubleClick(event: PIXI.InteractionEvent): boolean | void {
     const position = this.getSnappedPoint(event.data.global);
     const realm = this.realmManager.getRealmAt(position.x, position.y);
-    
+
     if (realm) {
       this.openRealmProperties(realm);
       return true;
     }
-    
+
     return false;
   }
 
@@ -279,13 +279,13 @@ export class RealmLayer extends (globalThis.foundry?.canvas?.layers?.RegionLayer
         }
         break;
     }
-    
+
     return super._onKeyDown?.(event);
   }
 
   // Click Handlers
 
-  private handleIdleClick(position: PIXI.Point, event: PIXI.InteractionEvent): void {
+  private handleIdleClick(position: PIXI.Point, _event: PIXI.InteractionEvent): void {
     if (this.activeTool === DrawingTool.SELECT) {
       // Select realm at position
       const realm = this.realmManager.getRealmAt(position.x, position.y);
@@ -299,11 +299,11 @@ export class RealmLayer extends (globalThis.foundry?.canvas?.layers?.RegionLayer
     }
   }
 
-  private handleDrawingClick(position: PIXI.Point, event: PIXI.InteractionEvent): void {
+  private handleDrawingClick(position: PIXI.Point, _event: PIXI.InteractionEvent): void {
     if (this.activeTool === DrawingTool.POLYGON) {
       // Add point to polygon
       this.currentPolygon.push(position.x, position.y);
-      
+
       // Check for polygon completion (click near first point)
       if (this.currentPolygon.length >= 6) {
         const firstX = this.currentPolygon[0];
@@ -311,7 +311,7 @@ export class RealmLayer extends (globalThis.foundry?.canvas?.layers?.RegionLayer
         const distance = Math.sqrt(
           Math.pow(position.x - firstX, 2) + Math.pow(position.y - firstY, 2)
         );
-        
+
         // Complete if clicked near start (within 20 pixels)
         if (distance <= 20) {
           this.completeDrawing();
@@ -331,7 +331,7 @@ export class RealmLayer extends (globalThis.foundry?.canvas?.layers?.RegionLayer
     }
   }
 
-  private handleSelectingClick(position: PIXI.Point, event: PIXI.InteractionEvent): void {
+  private handleSelectingClick(position: PIXI.Point, _event: PIXI.InteractionEvent): void {
     // Check if clicking on the selected realm
     if (this.selectedRealm && this.selectedRealm.containsPoint(position.x, position.y)) {
       // Start editing mode (future enhancement)
@@ -342,7 +342,7 @@ export class RealmLayer extends (globalThis.foundry?.canvas?.layers?.RegionLayer
       this.selectedRealm = realm;
       this.drawingState = realm ? DrawingState.SELECTING : DrawingState.IDLE;
     }
-    
+
     this.refresh();
   }
 
@@ -355,7 +355,7 @@ export class RealmLayer extends (globalThis.foundry?.canvas?.layers?.RegionLayer
           type: 'polygon',
           points: [...this.currentPolygon] // Copy array
         };
-        
+
       case DrawingTool.RECTANGLE:
         if (this.currentPolygon.length >= 4) {
           const [x1, y1, x2, y2] = this.currentPolygon;
@@ -368,7 +368,7 @@ export class RealmLayer extends (globalThis.foundry?.canvas?.layers?.RegionLayer
           };
         }
         break;
-        
+
       case DrawingTool.CIRCLE:
         if (this.currentPolygon.length >= 4) {
           const [x1, y1, x2, y2] = this.currentPolygon;
@@ -382,7 +382,7 @@ export class RealmLayer extends (globalThis.foundry?.canvas?.layers?.RegionLayer
         }
         break;
     }
-    
+
     return null;
   }
 
@@ -395,7 +395,7 @@ export class RealmLayer extends (globalThis.foundry?.canvas?.layers?.RegionLayer
     // Clear existing graphics
     this.realmGraphics.forEach(g => g.destroy());
     this.realmGraphics.clear();
-    
+
     // Draw each realm
     const realms = this.realmManager.getAllRealms();
     for (const realm of realms) {
@@ -408,22 +408,22 @@ export class RealmLayer extends (globalThis.foundry?.canvas?.layers?.RegionLayer
    */
   private drawRealm(realm: RealmData): void {
     const graphics = new PIXI.Graphics();
-    
+
     // Determine colors based on selection state
     const isSelected = this.selectedRealm?.id === realm.id;
     const fillColor = this.getRealmColor(realm);
     const fillAlpha = isSelected ? 0.4 : 0.2;
     const strokeColor = isSelected ? 0xffd700 : 0x4a90e2; // Gold if selected, blue otherwise
     const strokeWidth = isSelected ? 3 : 2;
-    
+
     // Draw the realm geometry
     graphics.lineStyle(strokeWidth, strokeColor, 1);
     graphics.beginFill(fillColor, fillAlpha);
-    
+
     this.drawGeometry(graphics, realm.geometry);
-    
+
     graphics.endFill();
-    
+
     // Store and add to layer
     this.realmGraphics.set(realm.id, graphics);
     this.addChild(graphics);
@@ -439,7 +439,7 @@ export class RealmLayer extends (globalThis.foundry?.canvas?.layers?.RegionLayer
           graphics.drawPolygon(geometry.points);
         }
         break;
-        
+
       case 'rectangle':
         graphics.drawRect(
           geometry.x - geometry.width / 2,
@@ -448,7 +448,7 @@ export class RealmLayer extends (globalThis.foundry?.canvas?.layers?.RegionLayer
           geometry.height
         );
         break;
-        
+
       case 'circle':
         graphics.drawCircle(geometry.x, geometry.y, geometry.radius);
         break;
@@ -460,15 +460,22 @@ export class RealmLayer extends (globalThis.foundry?.canvas?.layers?.RegionLayer
    */
   private getRealmColor(realm: RealmData): number {
     const biome = realm.getTag('biome');
-    
+
     switch (biome) {
-      case 'forest': return 0x228b22; // Forest green
-      case 'desert': return 0xdaa520; // Goldenrod
-      case 'mountain': return 0x696969; // Dim gray
-      case 'swamp': return 0x556b2f; // Dark olive green
-      case 'grassland': return 0x9acd32; // Yellow green
-      case 'arctic': return 0x87ceeb; // Sky blue
-      default: return 0x4a90e2; // Default blue
+      case 'forest':
+        return 0x228b22; // Forest green
+      case 'desert':
+        return 0xdaa520; // Goldenrod
+      case 'mountain':
+        return 0x696969; // Dim gray
+      case 'swamp':
+        return 0x556b2f; // Dark olive green
+      case 'grassland':
+        return 0x9acd32; // Yellow green
+      case 'arctic':
+        return 0x87ceeb; // Sky blue
+      default:
+        return 0x4a90e2; // Default blue
     }
   }
 
@@ -486,12 +493,12 @@ export class RealmLayer extends (globalThis.foundry?.canvas?.layers?.RegionLayer
    */
   private getSnappedPoint(global: PIXI.Point): PIXI.Point {
     const local = this.toLocal(global);
-    
+
     if (canvas?.grid?.type && this.options.snapToGrid) {
       const snapped = canvas.grid.getSnappedPosition(local.x, local.y);
       return new PIXI.Point(snapped.x, snapped.y);
     }
-    
+
     return local;
   }
 
@@ -499,9 +506,13 @@ export class RealmLayer extends (globalThis.foundry?.canvas?.layers?.RegionLayer
    * Update cursor based on current state
    */
   private updateCursor(): void {
-    const cursor = this.drawingState === DrawingState.DRAWING ? 'crosshair' : 
-                  this.activeTool === DrawingTool.SELECT ? 'pointer' : 'crosshair';
-    
+    const cursor =
+      this.drawingState === DrawingState.DRAWING
+        ? 'crosshair'
+        : this.activeTool === DrawingTool.SELECT
+          ? 'pointer'
+          : 'crosshair';
+
     if (canvas?.app?.view) {
       canvas.app.view.style.cursor = cursor;
     }
@@ -533,14 +544,14 @@ export class RealmLayer extends (globalThis.foundry?.canvas?.layers?.RegionLayer
    */
   private async deleteSelectedRealm(): Promise<void> {
     if (!this.selectedRealm) return;
-    
+
     const result = await Dialog.confirm({
       title: 'Delete Realm',
       content: `Are you sure you want to delete the realm "${this.selectedRealm.name}"?`,
       yes: () => true,
       no: () => false
     });
-    
+
     if (result) {
       await this.realmManager.deleteRealm(this.selectedRealm.id);
       this.selectedRealm = null;
@@ -557,28 +568,28 @@ export class RealmLayer extends (globalThis.foundry?.canvas?.layers?.RegionLayer
 
   private onRealmUpdated(event: CustomEvent): void {
     const realm = event.detail.realm;
-    
+
     // Remove old graphics
     const oldGraphics = this.realmGraphics.get(realm.id);
     if (oldGraphics) {
       oldGraphics.destroy();
       this.realmGraphics.delete(realm.id);
     }
-    
+
     // Draw updated realm
     this.drawRealm(realm);
   }
 
   private onRealmDeleted(event: CustomEvent): void {
     const realmId = event.detail.realmId;
-    
+
     // Remove graphics
     const graphics = this.realmGraphics.get(realmId);
     if (graphics) {
       graphics.destroy();
       this.realmGraphics.delete(realmId);
     }
-    
+
     // Clear selection if this realm was selected
     if (this.selectedRealm?.id === realmId) {
       this.selectedRealm = null;
@@ -586,7 +597,7 @@ export class RealmLayer extends (globalThis.foundry?.canvas?.layers?.RegionLayer
     }
   }
 
-  private onRealmsLoaded(event: CustomEvent): void {
+  private onRealmsLoaded(_event: CustomEvent): void {
     this.drawAllRealms();
   }
 
@@ -624,7 +635,7 @@ export class RealmLayer extends (globalThis.foundry?.canvas?.layers?.RegionLayer
       const module = await import('./realm-properties-dialog');
       RealmPropertiesDialog = module.RealmPropertiesDialog;
     }
-    
+
     RealmPropertiesDialog.open(realm);
   }
 
@@ -661,7 +672,7 @@ export class RealmLayer extends (globalThis.foundry?.canvas?.layers?.RegionLayer
     // For now, return a basic shape object
     const interaction = event.interactionData;
     if (!interaction) return null;
-    
+
     // RegionLayer should provide shape data in the event
     return interaction.shape || interaction.preview || null;
   }

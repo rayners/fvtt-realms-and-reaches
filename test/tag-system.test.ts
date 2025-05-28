@@ -36,7 +36,7 @@ describe('TagSystem', () => {
         'no_value:', // No value
         'key::double_colon', // Double colon (non-module)
         'invalid chars!:value', // Invalid characters in key
-        'key:invalid chars!', // Invalid characters in value
+        'key:invalid chars!' // Invalid characters in value
       ];
 
       for (const tag of invalidTags) {
@@ -64,14 +64,14 @@ describe('TagSystem', () => {
   describe('Tag Suggestions', () => {
     it('should suggest namespace prefixes for partial input', () => {
       const suggestions = tagSystem.getSuggestions('bio');
-      
+
       expect(suggestions.length).toBeGreaterThan(0);
       expect(suggestions.some(s => s.tag.startsWith('biome:'))).toBe(true);
     });
 
     it('should suggest values for specific namespaces', () => {
       const suggestions = tagSystem.getSuggestions('biome:for');
-      
+
       expect(suggestions.length).toBeGreaterThan(0);
       expect(suggestions.some(s => s.tag === 'biome:forest')).toBe(true);
     });
@@ -79,7 +79,7 @@ describe('TagSystem', () => {
     it('should exclude already used single-value namespaces', () => {
       const existingTags = ['biome:forest'];
       const suggestions = tagSystem.getSuggestions('bio', existingTags);
-      
+
       // Should not suggest biome since it's already used
       expect(suggestions.some(s => s.tag.startsWith('biome:'))).toBe(false);
     });
@@ -87,7 +87,7 @@ describe('TagSystem', () => {
     it('should allow multiple resource tags', () => {
       const existingTags = ['resources:timber'];
       const suggestions = tagSystem.getSuggestions('resources:', existingTags);
-      
+
       // Should still suggest more resource tags
       expect(suggestions.length).toBeGreaterThan(0);
       expect(suggestions.some(s => s.tag.includes('resources:'))).toBe(true);
@@ -95,7 +95,7 @@ describe('TagSystem', () => {
 
     it('should sort suggestions by relevance', () => {
       const suggestions = tagSystem.getSuggestions('forest');
-      
+
       // More relevant suggestions should come first
       expect(suggestions[0].score).toBeGreaterThanOrEqual(suggestions[1]?.score || 0);
     });
@@ -133,7 +133,7 @@ describe('TagSystem', () => {
   describe('Biome Tag Suggestions', () => {
     it('should provide appropriate tags for forest biome', () => {
       const suggestions = tagSystem.getBiomeTagSuggestions('forest');
-      
+
       expect(suggestions).toContain('terrain:dense');
       expect(suggestions).toContain('resources:timber');
       expect(suggestions).toContain('resources:game');
@@ -141,7 +141,7 @@ describe('TagSystem', () => {
 
     it('should provide appropriate tags for desert biome', () => {
       const suggestions = tagSystem.getBiomeTagSuggestions('desert');
-      
+
       expect(suggestions).toContain('terrain:rocky');
       expect(suggestions).toContain('climate:arid');
     });
@@ -156,7 +156,7 @@ describe('TagSystem', () => {
     it('should detect multiple biome tags', () => {
       const tags = ['biome:forest', 'biome:desert'];
       const conflicts = tagSystem.detectConflicts(tags);
-      
+
       expect(conflicts.length).toBeGreaterThan(0);
       expect(conflicts.some(c => c.includes('Multiple biome tags'))).toBe(true);
     });
@@ -164,21 +164,21 @@ describe('TagSystem', () => {
     it('should detect logical conflicts', () => {
       const tags = ['travel_speed:1.5', 'terrain:dense'];
       const conflicts = tagSystem.detectConflicts(tags);
-      
+
       expect(conflicts.some(c => c.includes('High travel speed conflicts'))).toBe(true);
     });
 
     it('should allow multiple resource tags', () => {
       const tags = ['resources:timber', 'resources:game'];
       const conflicts = tagSystem.detectConflicts(tags);
-      
+
       expect(conflicts.length).toBe(0);
     });
 
     it('should detect multiple climate tags', () => {
       const tags = ['climate:temperate', 'climate:arctic'];
       const conflicts = tagSystem.detectConflicts(tags);
-      
+
       expect(conflicts.some(c => c.includes('Multiple climate tags'))).toBe(true);
     });
   });
@@ -186,10 +186,16 @@ describe('TagSystem', () => {
   describe('Namespace Configuration', () => {
     it('should have all expected core namespaces', () => {
       const expectedNamespaces = [
-        'biome', 'terrain', 'climate', 'travel_speed', 
-        'resources', 'elevation', 'custom', 'module'
+        'biome',
+        'terrain',
+        'climate',
+        'travel_speed',
+        'resources',
+        'elevation',
+        'custom',
+        'module'
       ];
-      
+
       for (const namespace of expectedNamespaces) {
         expect(TAG_NAMESPACES[namespace]).toBeDefined();
       }
@@ -202,7 +208,7 @@ describe('TagSystem', () => {
         expect(namespace.description).toBeDefined();
         expect(namespace.color).toMatch(/^#[0-9a-f]{6}$/i);
         expect(namespace.examples.length).toBeGreaterThan(0);
-        
+
         // Each example should be valid for its namespace
         for (const example of namespace.examples) {
           expect(example.startsWith(`${key}:`)).toBe(true);
@@ -211,11 +217,10 @@ describe('TagSystem', () => {
     });
 
     it('should have suggestions for namespaces that specify them', () => {
-      const namespacesWithSuggestions = Object.values(TAG_NAMESPACES)
-        .filter(ns => ns.suggestions);
-      
+      const namespacesWithSuggestions = Object.values(TAG_NAMESPACES).filter(ns => ns.suggestions);
+
       expect(namespacesWithSuggestions.length).toBeGreaterThan(0);
-      
+
       for (const namespace of namespacesWithSuggestions) {
         expect(namespace.suggestions!.length).toBeGreaterThan(0);
       }
@@ -231,7 +236,7 @@ describe('TagSystem', () => {
     it('should handle malformed existing tags in suggestions', () => {
       const existingTags = ['invalid_tag', 'biome:forest'];
       const suggestions = tagSystem.getSuggestions('terrain', existingTags);
-      
+
       expect(Array.isArray(suggestions)).toBe(true);
     });
 

@@ -19,11 +19,11 @@ global.Dialog = class MockDialog {
       height: 'auto'
     };
   }
-  
+
   constructor(data: any, options: any = {}) {
     // Mock constructor
   }
-  
+
   static confirm = vi.fn();
 } as any;
 
@@ -55,10 +55,10 @@ describe('RealmPropertiesDialog', () => {
     it('should prepare data correctly for existing realm', () => {
       // Create dialog instance
       const dialog = new RealmPropertiesDialog(realm);
-      
+
       // Get prepared data
       const data = dialog.getData();
-      
+
       expect(data.realm.name).toBe('Test Forest');
       expect(data.realm.tags).toContain('biome:forest');
       expect(data.realm.tags).toContain('terrain:dense');
@@ -70,10 +70,10 @@ describe('RealmPropertiesDialog', () => {
         name: '',
         geometry: { type: 'polygon', points: [] }
       });
-      
+
       const dialog = new RealmPropertiesDialog(newRealm);
       const data = dialog.getData();
-      
+
       expect(data.isNew).toBe(true);
     });
   });
@@ -85,7 +85,7 @@ describe('RealmPropertiesDialog', () => {
 
     it('should have proper default options', () => {
       const options = RealmPropertiesDialog.defaultOptions;
-      
+
       expect(options.classes).toContain('realm-properties-dialog');
       expect(options.width).toBe(500);
       expect(options.template).toBe('modules/realms-and-reaches/templates/realm-properties.hbs');
@@ -95,7 +95,7 @@ describe('RealmPropertiesDialog', () => {
   describe('Dialog Configuration', () => {
     it('should set correct title for existing realm', () => {
       const dialog = new RealmPropertiesDialog(realm);
-      
+
       // The title should include the realm name
       expect(dialog.options.title).toContain('Test Forest');
     });
@@ -103,13 +103,13 @@ describe('RealmPropertiesDialog', () => {
     it('should set correct title for new realm', () => {
       const newRealm = new RealmData({ name: '', geometry: { type: 'polygon', points: [] } });
       const dialog = new RealmPropertiesDialog(newRealm);
-      
+
       expect(dialog.options.title).toContain('Create New Realm');
     });
 
     it('should have correct CSS classes', () => {
       const dialog = new RealmPropertiesDialog(realm);
-      
+
       expect(dialog.options.classes).toContain('realm-properties-dialog');
     });
   });

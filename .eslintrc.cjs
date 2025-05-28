@@ -65,7 +65,7 @@ module.exports = {
     ],
     '@typescript-eslint/ban-ts-comment': 'off',
     '@typescript-eslint/no-non-null-assertion': 'warn',
-    
+
     // Disable some strict rules that don't work well with Foundry VTT
     '@typescript-eslint/no-unsafe-assignment': 'off',
     '@typescript-eslint/no-unsafe-member-access': 'off',
@@ -83,9 +83,12 @@ module.exports = {
     'no-var': 'error',
     eqeqeq: ['error', 'always', { null: 'ignore' }],
     'no-empty': ['error', { allowEmptyCatch: true }],
-    '@typescript-eslint/no-empty-function': ['error', { 
-      allow: ['constructors', 'methods', 'arrowFunctions'] 
-    }],
+    '@typescript-eslint/no-empty-function': [
+      'error',
+      {
+        allow: ['constructors', 'methods', 'arrowFunctions']
+      }
+    ],
 
     // Prettier will handle these
     'prettier/prettier': 'error'

@@ -1,6 +1,6 @@
 /**
  * Tag System - Validation, suggestions, and namespace management for realm tags
- * 
+ *
  * Provides tag validation, auto-suggestions, and namespace conventions
  * for the flexible tag-based realm metadata system.
  */
@@ -33,11 +33,21 @@ export const TAG_NAMESPACES: Record<string, TagNamespace> = {
     color: '#28a745',
     examples: ['biome:forest', 'biome:desert', 'biome:mountain', 'biome:swamp'],
     suggestions: [
-      'forest', 'desert', 'mountain', 'swamp', 'grassland', 'tundra',
-      'jungle', 'coast', 'hills', 'valley', 'plateau', 'canyon'
+      'forest',
+      'desert',
+      'mountain',
+      'swamp',
+      'grassland',
+      'tundra',
+      'jungle',
+      'coast',
+      'hills',
+      'valley',
+      'plateau',
+      'canyon'
     ]
   },
-  
+
   terrain: {
     prefix: 'terrain',
     name: 'Terrain',
@@ -45,11 +55,21 @@ export const TAG_NAMESPACES: Record<string, TagNamespace> = {
     color: '#dc3545',
     examples: ['terrain:dense', 'terrain:rocky', 'terrain:marshy'],
     suggestions: [
-      'dense', 'sparse', 'rocky', 'marshy', 'rugged', 'smooth',
-      'steep', 'flat', 'broken', 'cultivated', 'wild', 'clear'
+      'dense',
+      'sparse',
+      'rocky',
+      'marshy',
+      'rugged',
+      'smooth',
+      'steep',
+      'flat',
+      'broken',
+      'cultivated',
+      'wild',
+      'clear'
     ]
   },
-  
+
   climate: {
     prefix: 'climate',
     name: 'Climate',
@@ -57,11 +77,21 @@ export const TAG_NAMESPACES: Record<string, TagNamespace> = {
     color: '#17a2b8',
     examples: ['climate:temperate', 'climate:arctic', 'climate:tropical'],
     suggestions: [
-      'temperate', 'arctic', 'tropical', 'arid', 'humid', 'dry',
-      'wet', 'mild', 'harsh', 'seasonal', 'stable', 'volatile'
+      'temperate',
+      'arctic',
+      'tropical',
+      'arid',
+      'humid',
+      'dry',
+      'wet',
+      'mild',
+      'harsh',
+      'seasonal',
+      'stable',
+      'volatile'
     ]
   },
-  
+
   travel_speed: {
     prefix: 'travel_speed',
     name: 'Travel Speed',
@@ -74,7 +104,7 @@ export const TAG_NAMESPACES: Record<string, TagNamespace> = {
     },
     suggestions: ['0.25', '0.5', '0.75', '1.0', '1.25', '1.5', '2.0']
   },
-  
+
   resources: {
     prefix: 'resources',
     name: 'Resources',
@@ -82,11 +112,21 @@ export const TAG_NAMESPACES: Record<string, TagNamespace> = {
     color: '#6f42c1',
     examples: ['resources:timber', 'resources:game', 'resources:minerals'],
     suggestions: [
-      'timber', 'game', 'fish', 'minerals', 'herbs', 'stone',
-      'water', 'food', 'fuel', 'rare_metals', 'gems', 'magical'
+      'timber',
+      'game',
+      'fish',
+      'minerals',
+      'herbs',
+      'stone',
+      'water',
+      'food',
+      'fuel',
+      'rare_metals',
+      'gems',
+      'magical'
     ]
   },
-  
+
   elevation: {
     prefix: 'elevation',
     name: 'Elevation',
@@ -94,11 +134,18 @@ export const TAG_NAMESPACES: Record<string, TagNamespace> = {
     color: '#6c757d',
     examples: ['elevation:lowland', 'elevation:highland', 'elevation:peak'],
     suggestions: [
-      'sea_level', 'lowland', 'highland', 'mountain', 'peak',
-      'underground', 'elevated', 'deep', 'surface'
+      'sea_level',
+      'lowland',
+      'highland',
+      'mountain',
+      'peak',
+      'underground',
+      'elevated',
+      'deep',
+      'surface'
     ]
   },
-  
+
   custom: {
     prefix: 'custom',
     name: 'Custom',
@@ -106,11 +153,19 @@ export const TAG_NAMESPACES: Record<string, TagNamespace> = {
     color: '#e83e8c',
     examples: ['custom:haunted', 'custom:sacred', 'custom:dangerous'],
     suggestions: [
-      'haunted', 'sacred', 'dangerous', 'peaceful', 'magical',
-      'cursed', 'blessed', 'ancient', 'ruined', 'inhabited'
+      'haunted',
+      'sacred',
+      'dangerous',
+      'peaceful',
+      'magical',
+      'cursed',
+      'blessed',
+      'ancient',
+      'ruined',
+      'inhabited'
     ]
   },
-  
+
   module: {
     prefix: 'module',
     name: 'Module',
@@ -130,7 +185,7 @@ export const TAG_NAMESPACES: Record<string, TagNamespace> = {
  */
 export class TagSystem {
   private static instance: TagSystem;
-  
+
   static getInstance(): TagSystem {
     if (!TagSystem.instance) {
       TagSystem.instance = new TagSystem();
@@ -167,13 +222,19 @@ export class TagSystem {
     // Character validation
     const validKeyPattern = /^[a-zA-Z0-9_-]+$/;
     if (!validKeyPattern.test(prefix)) {
-      return { valid: false, error: 'Tag key can only contain letters, numbers, underscores, and hyphens' };
+      return {
+        valid: false,
+        error: 'Tag key can only contain letters, numbers, underscores, and hyphens'
+      };
     }
 
     const value = valueParts.join(':');
     const validValuePattern = /^[a-zA-Z0-9_.-]+$/;
     if (!validValuePattern.test(value)) {
-      return { valid: false, error: 'Tag value can only contain letters, numbers, underscores, periods, and hyphens' };
+      return {
+        valid: false,
+        error: 'Tag value can only contain letters, numbers, underscores, periods, and hyphens'
+      };
     }
 
     // Namespace-specific validation
@@ -202,7 +263,7 @@ export class TagSystem {
       // Suggesting values for a specific key
       const [prefix, valuePartial] = partial.split(':', 2);
       const namespace = TAG_NAMESPACES[prefix];
-      
+
       if (namespace && namespace.suggestions) {
         for (const suggestion of namespace.suggestions) {
           if (suggestion.toLowerCase().includes(valuePartial.toLowerCase())) {
@@ -277,12 +338,7 @@ export class TagSystem {
         'resources:game',
         'climate:temperate'
       ],
-      desert: [
-        'terrain:rocky',
-        'travel_speed:0.5',
-        'resources:minerals',
-        'climate:arid'
-      ],
+      desert: ['terrain:rocky', 'travel_speed:0.5', 'resources:minerals', 'climate:arid'],
       mountain: [
         'terrain:rugged',
         'travel_speed:0.25',
@@ -290,18 +346,8 @@ export class TagSystem {
         'resources:stone',
         'resources:minerals'
       ],
-      swamp: [
-        'terrain:marshy',
-        'travel_speed:0.5',
-        'resources:herbs',
-        'climate:humid'
-      ],
-      grassland: [
-        'terrain:flat',
-        'travel_speed:1.25',
-        'resources:game',
-        'climate:temperate'
-      ]
+      swamp: ['terrain:marshy', 'travel_speed:0.5', 'resources:herbs', 'climate:humid'],
+      grassland: ['terrain:flat', 'travel_speed:1.25', 'resources:game', 'climate:temperate']
     };
 
     return biomePatterns[biome.toLowerCase()] || [];
@@ -335,7 +381,9 @@ export class TagSystem {
     }
 
     // Check for logical conflicts
-    const travelSpeed = parseFloat(tags.find(t => t.startsWith('travel_speed:'))?.split(':')[1] || '1');
+    const travelSpeed = parseFloat(
+      tags.find(t => t.startsWith('travel_speed:'))?.split(':')[1] || '1'
+    );
     const hasDenseTerrain = tags.some(t => t === 'terrain:dense');
     const hasRockyTerrain = tags.some(t => t === 'terrain:rocky');
 
@@ -352,11 +400,11 @@ export class TagSystem {
   private calculateRelevanceScore(suggestion: string, input: string): number {
     const suggestionLower = suggestion.toLowerCase();
     const inputLower = input.toLowerCase();
-    
+
     if (suggestionLower === inputLower) return 100;
     if (suggestionLower.startsWith(inputLower)) return 80;
     if (suggestionLower.includes(inputLower)) return 60;
-    
+
     // Levenshtein distance based scoring
     const distance = this.levenshteinDistance(suggestionLower, inputLower);
     const maxLength = Math.max(suggestionLower.length, inputLower.length);
@@ -367,7 +415,9 @@ export class TagSystem {
    * Calculate Levenshtein distance between two strings
    */
   private levenshteinDistance(a: string, b: string): number {
-    const matrix = Array(b.length + 1).fill(null).map(() => Array(a.length + 1).fill(null));
+    const matrix = Array(b.length + 1)
+      .fill(null)
+      .map(() => Array(a.length + 1).fill(null));
 
     for (let i = 0; i <= a.length; i++) matrix[0][i] = i;
     for (let j = 0; j <= b.length; j++) matrix[j][0] = j;
@@ -387,7 +437,7 @@ export class TagSystem {
   }
 
   // Static convenience methods for API
-  
+
   /**
    * Static method to validate a tag
    */

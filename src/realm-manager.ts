@@ -1,16 +1,15 @@
 /**
  * RealmManager - Spatial indexing and data management for realms
- * 
+ *
  * Provides fast spatial queries, data persistence, and event management
  * for the realm system. Uses Region documents with type "realm".
  */
-
 
 // RealmData is now replaced by Region documents with realm flag
 // Custom data is stored in flags["realms-and-reaches"]
 type RealmRegion = RegionDocument & {
   flags: {
-    "realms-and-reaches"?: {
+    'realms-and-reaches'?: {
       isRealm?: boolean;
       tags?: string[];
       metadata?: {
@@ -39,7 +38,7 @@ class RealmHelpers {
    * Get tags from a realm region
    */
   static getTags(region: RealmRegion): string[] {
-    return region.flags["realms-and-reaches"]?.tags || [];
+    return region.flags['realms-and-reaches']?.tags || [];
   }
 
   /**
@@ -49,7 +48,7 @@ class RealmHelpers {
     const currentTags = this.getTags(region);
     if (!currentTags.includes(tag)) {
       const newTags = [...currentTags, tag];
-      await region.setFlag("realms-and-reaches", "tags", newTags);
+      await region.setFlag('realms-and-reaches', 'tags', newTags);
     }
   }
 
@@ -59,7 +58,7 @@ class RealmHelpers {
   static async removeTag(region: RealmRegion, tag: string): Promise<void> {
     const currentTags = this.getTags(region);
     const newTags = currentTags.filter(t => t !== tag);
-    await region.setFlag("realms-and-reaches", "tags", newTags);
+    await region.setFlag('realms-and-reaches', 'tags', newTags);
   }
 
   /**
@@ -83,7 +82,7 @@ class RealmHelpers {
    */
   static containsPoint(region: RealmRegion, x: number, y: number): boolean {
     // Use Foundry's built-in Region.testPoint method
-    return region.testPoint({x, y}, 0.01);
+    return region.testPoint({ x, y }, 0.01);
   }
 
   /**
@@ -104,9 +103,9 @@ class RealmHelpers {
    * Update metadata for a realm region
    */
   static async touch(region: RealmRegion): Promise<void> {
-    const metadata = region.flags["realms-and-reaches"]?.metadata || {};
+    const metadata = region.flags['realms-and-reaches']?.metadata || {};
     metadata.modified = new Date().toISOString();
-    await region.setFlag("realms-and-reaches", "metadata", metadata);
+    await region.setFlag('realms-and-reaches', 'metadata', metadata);
   }
 }
 
@@ -116,9 +115,9 @@ class RealmHelpers {
  */
 export class RealmManager extends EventTarget {
   private static instances = new Map<string, RealmManager>();
-  
+
   private sceneId: string;
-  
+
   private constructor(sceneId: string) {
     super();
     this.sceneId = sceneId;
@@ -129,13 +128,13 @@ export class RealmManager extends EventTarget {
    */
   static getInstance(sceneId?: string): RealmManager {
     const id = sceneId || canvas?.scene?.id || 'global';
-    
+
     if (!RealmManager.instances.has(id)) {
       const manager = new RealmManager(id);
       RealmManager.instances.set(id, manager);
       manager.loadFromScene();
     }
-    
+
     return RealmManager.instances.get(id)!;
   }
 
@@ -180,45 +179,52 @@ export class RealmManager extends EventTarget {
       }
     };
 
-    const realm = await scene.createEmbeddedDocuments('Region', [regionData]) as RealmRegion[];
+    const realm = (await scene.createEmbeddedDocuments('Region', [regionData])) as RealmRegion[];
     const createdRealm = realm[0];
-    
+
     // Dispatch event
-    this.dispatchEvent(new CustomEvent('realmCreated', {
-      detail: { realm: createdRealm, sceneId: this.sceneId }
-    }));
-    
+    this.dispatchEvent(
+      new CustomEvent('realmCreated', {
+        detail: { realm: createdRealm, sceneId: this.sceneId }
+      })
+    );
+
     return createdRealm;
   }
 
   /**
    * Update an existing realm
    */
-  async updateRealm(realm: RealmRegion, updates: {
-    name?: string;
-    shapes?: any[];
-    tags?: string[];
-    color?: string;
-  }): Promise<void> {
+  async updateRealm(
+    realm: RealmRegion,
+    updates: {
+      name?: string;
+      shapes?: any[];
+      tags?: string[];
+      color?: string;
+    }
+  ): Promise<void> {
     // Update modified timestamp
     await RealmHelpers.touch(realm);
-    
+
     // Update the region document
     const updateData: any = {};
     if (updates.name !== undefined) updateData.name = updates.name;
     if (updates.shapes !== undefined) updateData.shapes = updates.shapes;
     if (updates.color !== undefined) updateData.color = updates.color;
-    
+
     if (updates.tags !== undefined) {
       updateData['flags.realms-and-reaches.tags'] = updates.tags;
     }
-    
+
     await realm.update(updateData);
-    
+
     // Dispatch event
-    this.dispatchEvent(new CustomEvent('realmUpdated', {
-      detail: { realm, sceneId: this.sceneId }
-    }));
+    this.dispatchEvent(
+      new CustomEvent('realmUpdated', {
+        detail: { realm, sceneId: this.sceneId }
+      })
+    );
   }
 
   /**
@@ -227,15 +233,17 @@ export class RealmManager extends EventTarget {
   async deleteRealm(realmId: string): Promise<boolean> {
     const realm = this.getRealm(realmId);
     if (!realm) return false;
-    
+
     // Delete the region document
     await realm.delete();
-    
+
     // Dispatch event
-    this.dispatchEvent(new CustomEvent('realmDeleted', {
-      detail: { realm, realmId, sceneId: this.sceneId }
-    }));
-    
+    this.dispatchEvent(
+      new CustomEvent('realmDeleted', {
+        detail: { realm, realmId, sceneId: this.sceneId }
+      })
+    );
+
     return true;
   }
 
@@ -247,9 +255,9 @@ export class RealmManager extends EventTarget {
   getRealm(realmId: string): RealmRegion | null {
     const scene = game.scenes?.get(this.sceneId);
     if (!scene) return null;
-    
+
     const region = scene.regions.get(realmId) as RealmRegion;
-    return (region && region.type === 'realm') ? region : null;
+    return region && region.type === 'realm' ? region : null;
   }
 
   /**
@@ -266,15 +274,18 @@ export class RealmManager extends EventTarget {
   getRealmsAt(x: number, y: number): RealmRegion[] {
     const scene = game.scenes?.get(this.sceneId);
     if (!scene) return [];
-    
+
     const results: RealmRegion[] = [];
-    
+
     for (const region of scene.regions) {
-      if (region.flags?.['realms-and-reaches']?.isRealm === true && RealmHelpers.containsPoint(region as RealmRegion, x, y)) {
+      if (
+        region.flags?.['realms-and-reaches']?.isRealm === true &&
+        RealmHelpers.containsPoint(region as RealmRegion, x, y)
+      ) {
         results.push(region as RealmRegion);
       }
     }
-    
+
     return results;
   }
 
@@ -284,8 +295,10 @@ export class RealmManager extends EventTarget {
   getAllRealms(): RealmRegion[] {
     const scene = game.scenes?.get(this.sceneId);
     if (!scene) return [];
-    
-    return scene.regions.filter(region => region.flags?.['realms-and-reaches']?.isRealm === true) as RealmRegion[];
+
+    return scene.regions.filter(
+      region => region.flags?.['realms-and-reaches']?.isRealm === true
+    ) as RealmRegion[];
   }
 
   /**
@@ -293,14 +306,14 @@ export class RealmManager extends EventTarget {
    */
   findRealms(options: RealmQueryOptions): RealmRegion[] {
     let results = this.getAllRealms();
-    
+
     // Filter by tags
     if (options.tags && options.tags.length > 0) {
       results = results.filter(realm => {
         return options.tags!.every(tag => RealmHelpers.hasTag(realm, tag));
       });
     }
-    
+
     // Filter by bounds
     if (options.bounds) {
       results = results.filter(realm => {
@@ -308,12 +321,12 @@ export class RealmManager extends EventTarget {
         return this.boundsIntersect(options.bounds!, realmBounds);
       });
     }
-    
+
     // Apply limit
     if (options.limit && options.limit > 0) {
       results = results.slice(0, options.limit);
     }
-    
+
     return results;
   }
 
@@ -324,8 +337,12 @@ export class RealmManager extends EventTarget {
     a: { x: number; y: number; width: number; height: number },
     b: { x: number; y: number; width: number; height: number }
   ): boolean {
-    return !(a.x + a.width < b.x || b.x + b.width < a.x ||
-             a.y + a.height < b.y || b.y + b.height < a.y);
+    return !(
+      a.x + a.width < b.x ||
+      b.x + b.width < a.x ||
+      a.y + a.height < b.y ||
+      b.y + b.height < a.y
+    );
   }
 
   /**
@@ -352,9 +369,11 @@ export class RealmManager extends EventTarget {
   async loadFromScene(): Promise<void> {
     // No-op: Region documents are automatically loaded by Foundry
     // Dispatch event for compatibility
-    this.dispatchEvent(new CustomEvent('realmsLoaded', {
-      detail: { sceneId: this.sceneId, count: this.getAllRealms().length }
-    }));
+    this.dispatchEvent(
+      new CustomEvent('realmsLoaded', {
+        detail: { sceneId: this.sceneId, count: this.getAllRealms().length }
+      })
+    );
   }
 
   /**
@@ -363,9 +382,11 @@ export class RealmManager extends EventTarget {
   async saveToScene(): Promise<void> {
     // No-op: Region documents are automatically saved by Foundry
     // Dispatch event for compatibility
-    this.dispatchEvent(new CustomEvent('realmsSaved', {
-      detail: { sceneId: this.sceneId, count: this.getAllRealms().length }
-    }));
+    this.dispatchEvent(
+      new CustomEvent('realmsSaved', {
+        detail: { sceneId: this.sceneId, count: this.getAllRealms().length }
+      })
+    );
   }
 
   /**
@@ -374,7 +395,7 @@ export class RealmManager extends EventTarget {
   exportData(): any {
     const realms = this.getAllRealms();
     const scene = game.scenes?.get(this.sceneId);
-    
+
     return {
       format: 'realms-and-reaches-v1',
       metadata: {
@@ -399,27 +420,33 @@ export class RealmManager extends EventTarget {
   /**
    * Import realm data from export format
    */
-  async importData(data: any, options: { replace?: boolean; merge?: boolean } = {}): Promise<number> {
+  async importData(
+    data: any,
+    options: { replace?: boolean; merge?: boolean } = {}
+  ): Promise<number> {
     if (data.format !== 'realms-and-reaches-v1') {
       throw new Error('Unsupported data format');
     }
-    
+
     const scene = game.scenes?.get(this.sceneId);
     if (!scene) {
       throw new Error(`Scene ${this.sceneId} not found`);
     }
-    
+
     if (options.replace) {
       // Delete all existing realm regions
       const existingRealms = this.getAllRealms();
       if (existingRealms.length > 0) {
-        await scene.deleteEmbeddedDocuments('Region', existingRealms.map(r => r.id));
+        await scene.deleteEmbeddedDocuments(
+          'Region',
+          existingRealms.map(r => r.id)
+        );
       }
     }
-    
+
     let importedCount = 0;
     const regionData = [];
-    
+
     for (const realmObj of data.realms) {
       try {
         // Check for ID conflicts
@@ -431,7 +458,7 @@ export class RealmManager extends EventTarget {
           // Generate new ID for merge
           id = foundry.utils.randomID();
         }
-        
+
         const regionDocData = {
           _id: id,
           name: realmObj.name || 'Imported Realm',
@@ -449,24 +476,26 @@ export class RealmManager extends EventTarget {
             }
           }
         };
-        
+
         regionData.push(regionDocData);
         importedCount++;
       } catch (error) {
         console.warn(`Failed to import realm ${realmObj.id}:`, error);
       }
     }
-    
+
     // Create all regions at once
     if (regionData.length > 0) {
       await scene.createEmbeddedDocuments('Region', regionData);
     }
-    
+
     // Dispatch event
-    this.dispatchEvent(new CustomEvent('realmsImported', {
-      detail: { sceneId: this.sceneId, count: importedCount }
-    }));
-    
+    this.dispatchEvent(
+      new CustomEvent('realmsImported', {
+        detail: { sceneId: this.sceneId, count: importedCount }
+      })
+    );
+
     return importedCount;
   }
 
@@ -478,14 +507,14 @@ export class RealmManager extends EventTarget {
   getStatistics(): any {
     const realms = this.getAllRealms();
     const tagCounts = new Map<string, number>();
-    
+
     for (const realm of realms) {
       for (const tag of RealmHelpers.getTags(realm)) {
         const key = tag.split(':')[0];
         tagCounts.set(key, (tagCounts.get(key) || 0) + 1);
       }
     }
-    
+
     return {
       totalRealms: realms.length,
       tagCounts: Object.fromEntries(tagCounts),
@@ -499,18 +528,23 @@ export class RealmManager extends EventTarget {
   async clearAll(): Promise<void> {
     const realms = this.getAllRealms();
     const count = realms.length;
-    
+
     if (count > 0) {
       const scene = game.scenes?.get(this.sceneId);
       if (scene) {
-        await scene.deleteEmbeddedDocuments('Region', realms.map(r => r.id));
+        await scene.deleteEmbeddedDocuments(
+          'Region',
+          realms.map(r => r.id)
+        );
       }
     }
-    
+
     // Dispatch event
-    this.dispatchEvent(new CustomEvent('realmsCleared', {
-      detail: { sceneId: this.sceneId, count }
-    }));
+    this.dispatchEvent(
+      new CustomEvent('realmsCleared', {
+        detail: { sceneId: this.sceneId, count }
+      })
+    );
   }
 
   /**
@@ -518,14 +552,16 @@ export class RealmManager extends EventTarget {
    */
   async initialize(sceneId: string): Promise<void> {
     this.sceneId = sceneId;
-    
+
     // Load existing realm data - now automatic with Region documents
     await this.loadFromScene();
-    
+
     // Dispatch event
-    this.dispatchEvent(new CustomEvent('realmsLoaded', {
-      detail: { sceneId: this.sceneId }
-    }));
+    this.dispatchEvent(
+      new CustomEvent('realmsLoaded', {
+        detail: { sceneId: this.sceneId }
+      })
+    );
   }
 
   /**
@@ -533,7 +569,7 @@ export class RealmManager extends EventTarget {
    */
   exportScene(): any {
     const realms = this.getAllRealms();
-    
+
     return {
       format: 'realms-and-reaches-v1',
       metadata: {
@@ -565,26 +601,26 @@ export class RealmManager extends EventTarget {
     if (data.format !== 'realms-and-reaches-v1') {
       throw new Error('Unsupported data format');
     }
-    
+
     // Find scene data - use first scene if current not found
     const sceneData = data.scenes[this.sceneId] || Object.values(data.scenes)[0];
     if (!sceneData) {
       throw new Error('No scene data found in import');
     }
-    
+
     const scene = game.scenes?.get(this.sceneId);
     if (!scene) {
       throw new Error(`Scene ${this.sceneId} not found`);
     }
-    
+
     const regionData = [];
-    
+
     // Import realms
     for (const realmObj of (sceneData as any).realms) {
       try {
         // Generate new ID to avoid conflicts
         const id = foundry.utils.randomID();
-        
+
         const regionDocData = {
           _id: id,
           name: realmObj.name || 'Imported Realm',
@@ -602,21 +638,23 @@ export class RealmManager extends EventTarget {
             }
           }
         };
-        
+
         regionData.push(regionDocData);
       } catch (error) {
         console.warn('Failed to import realm:', error);
       }
     }
-    
+
     // Create all regions at once
     if (regionData.length > 0) {
       await scene.createEmbeddedDocuments('Region', regionData);
     }
-    
+
     // Dispatch event
-    this.dispatchEvent(new CustomEvent('realmsImported', {
-      detail: { sceneId: this.sceneId, count: regionData.length }
-    }));
+    this.dispatchEvent(
+      new CustomEvent('realmsImported', {
+        detail: { sceneId: this.sceneId, count: regionData.length }
+      })
+    );
   }
 }

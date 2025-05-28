@@ -1,13 +1,16 @@
 /**
  * Realms & Reaches - Main Module Entry Point
- * 
+ *
  * A queryable biome and terrain layer for narrative-driven gameplay,
  * exploration mechanics, and system integration.
  */
 
 // Type augmentations for Foundry VTT - only add what's missing
+// eslint-disable-next-line @typescript-eslint/no-namespace
 declare global {
+  // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace foundry {
+    // eslint-disable-next-line @typescript-eslint/no-namespace
     namespace utils {
       function randomID(): string;
       function mergeObject(target: any, source: any, options?: any): any;
@@ -31,13 +34,13 @@ console.log('Realms & Reaches | Initializing module...');
  */
 Hooks.once('init', async () => {
   console.log('Realms & Reaches | Module initialization started');
-  
+
   // Register module settings
   registerSettings();
-  
+
   // Note: Realm document types are automatically registered by Foundry
   // via the documentTypes field in module.json
-  
+
   // Register module API with additional exports
   const moduleAPI = {
     ...API,
@@ -46,7 +49,7 @@ Hooks.once('init', async () => {
     TagSystem
   };
   (game.modules.get('realms-and-reaches') as any).api = moduleAPI;
-  
+
   console.log('Realms & Reaches | Module initialization complete');
 });
 
@@ -55,21 +58,21 @@ Hooks.once('init', async () => {
  */
 Hooks.once('ready', async () => {
   console.log('Realms & Reaches | Module ready');
-  
+
   // Initialize realm manager for current scene
   if (canvas?.scene) {
     RealmManager.getInstance().initialize(canvas.scene.id);
   }
-  
+
   console.log('Realms & Reaches | Module setup complete');
 });
 
 /**
  * Handle scene changes and initialize realm data
  */
-Hooks.on('canvasReady', (canvas) => {
+Hooks.on('canvasReady', canvas => {
   console.log('Realms & Reaches | Canvas ready - using built-in Region layer');
-  
+
   // Load realm data for current scene
   if (canvas?.scene) {
     RealmManager.getInstance().initialize(canvas.scene.id);
@@ -83,45 +86,51 @@ function detectTravelScale(scene: Scene): 'realm' | 'region' | 'none' {
   // Check if travel controls are disabled for this scene
   const travelEnabled = scene.getFlag('realms-and-reaches', 'travelEnabled');
   if (travelEnabled === false) return 'none';
-  
+
   // Check for manual override first
   const manualScale = scene.getFlag('realms-and-reaches', 'travelScale');
   if (manualScale && ['realm', 'region', 'none'].includes(manualScale)) {
     return manualScale as 'realm' | 'region' | 'none';
   }
-  
+
   // Auto-detect based on grid type and distance units
   const distanceUnit = scene.grid?.units?.toLowerCase() || '';
   const gridType = scene.grid?.type; // FOUNDRY_GRID_TYPES: GRIDLESS=0, SQUARE=1, HEXAGONAL=2
-  
+
   // Grid type takes precedence - hex grids are for overland travel
-  if (gridType === 2) { // HEXAGONAL
+  if (gridType === 2) {
+    // HEXAGONAL
     return 'realm';
   }
-  
+
   // Square grids are for tactical/local scale
-  if (gridType === 1) { // SQUARE  
+  if (gridType === 1) {
+    // SQUARE
     return 'region';
   }
-  
+
   // Fallback to distance units for gridless scenes
   // Realm scale: kilometers, miles, leagues
-  if (distanceUnit.includes('km') || 
-      distanceUnit.includes('kilometer') || 
-      distanceUnit.includes('mile') || 
-      distanceUnit.includes('league')) {
+  if (
+    distanceUnit.includes('km') ||
+    distanceUnit.includes('kilometer') ||
+    distanceUnit.includes('mile') ||
+    distanceUnit.includes('league')
+  ) {
     return 'realm';
   }
-  
+
   // Region scale: feet, meters, yards
-  if (distanceUnit.includes('ft') || 
-      distanceUnit.includes('feet') || 
-      distanceUnit.includes('m') || 
-      distanceUnit.includes('meter') || 
-      distanceUnit.includes('yard')) {
+  if (
+    distanceUnit.includes('ft') ||
+    distanceUnit.includes('feet') ||
+    distanceUnit.includes('m') ||
+    distanceUnit.includes('meter') ||
+    distanceUnit.includes('yard')
+  ) {
     return 'region';
   }
-  
+
   // Default to none if no recognizable indicators
   return 'none';
 }
@@ -138,12 +147,12 @@ Hooks.on('getSceneControlButtons', (controls: Record<string, any>) => {
   if (!currentScene) return;
 
   const travelScale = detectTravelScale(currentScene);
-  
+
   // Only add controls if travel scale is detected
   if (travelScale === 'none') return;
 
   const tools: any[] = [];
-  
+
   if (travelScale === 'realm') {
     tools.push(
       {
@@ -183,7 +192,7 @@ Hooks.on('getSceneControlButtons', (controls: Record<string, any>) => {
         button: true
       },
       {
-        name: 'region-create', 
+        name: 'region-create',
         title: 'Create Region',
         icon: 'fas fa-plus',
         onClick: () => {
@@ -216,7 +225,7 @@ Hooks.on('getSceneControlButtons', (controls: Record<string, any>) => {
 /**
  * Add travel scale configuration to scene config form
  */
-Hooks.on('renderSceneConfig', (app: any, html: any, data: any) => {
+Hooks.on('renderSceneConfig', (app: any, html: any, _data: any) => {
   // Only show for GMs
   if (!game.user?.isGM) return;
 
@@ -224,21 +233,29 @@ Hooks.on('renderSceneConfig', (app: any, html: any, data: any) => {
   const autoDetectTravelScale = (scene: Scene): 'realm' | 'region' | 'none' => {
     const distanceUnit = scene.grid?.units?.toLowerCase() || '';
     const gridType = scene.grid?.type;
-    
+
     if (gridType === 2) return 'realm'; // HEXAGONAL
     if (gridType === 1) return 'region'; // SQUARE
-    
-    if (distanceUnit.includes('km') || distanceUnit.includes('kilometer') || 
-        distanceUnit.includes('mile') || distanceUnit.includes('league')) {
+
+    if (
+      distanceUnit.includes('km') ||
+      distanceUnit.includes('kilometer') ||
+      distanceUnit.includes('mile') ||
+      distanceUnit.includes('league')
+    ) {
       return 'realm';
     }
-    
-    if (distanceUnit.includes('ft') || distanceUnit.includes('feet') || 
-        distanceUnit.includes('m') || distanceUnit.includes('meter') || 
-        distanceUnit.includes('yard')) {
+
+    if (
+      distanceUnit.includes('ft') ||
+      distanceUnit.includes('feet') ||
+      distanceUnit.includes('m') ||
+      distanceUnit.includes('meter') ||
+      distanceUnit.includes('yard')
+    ) {
       return 'region';
     }
-    
+
     return 'none';
   };
 
@@ -246,7 +263,7 @@ Hooks.on('renderSceneConfig', (app: any, html: any, data: any) => {
   const travelEnabled = app.object.getFlag('realms-and-reaches', 'travelEnabled') !== false;
   const manualScale = app.object.getFlag('realms-and-reaches', 'travelScale') || 'auto';
   const autoDetected = autoDetectTravelScale(app.object);
-  
+
   const travelControlsHtml = `
     <div class="form-group">
       <label>Travel Controls</label>
@@ -267,10 +284,10 @@ Hooks.on('renderSceneConfig', (app: any, html: any, data: any) => {
       </p>
     </div>
   `;
-  
+
   // Convert html to jQuery if it's not already
   const $html = html.jquery ? html : $(html);
-  
+
   // Insert after the "Initial View Position" section
   const insertAfter = $html.find('input[name="initial.scale"]').closest('.form-group');
   if (insertAfter.length) {
@@ -286,21 +303,27 @@ Hooks.on('renderSceneConfig', (app: any, html: any, data: any) => {
  */
 function createRealmTool(toolType: 'polygon' | 'rectangle' | 'circle') {
   console.log('Realms & Reaches | Creating realm with tool:', toolType);
-  
+
   try {
     // Activate the regions layer
     if (!(canvas as any)?.regions) {
       ui.notifications?.error('Regions layer not available');
       return;
     }
-    
+
     (canvas as any).regions.activate();
-    ui.notifications?.info(`Draw your ${toolType} realm shape, then right-click or press Enter to finish`);
-    
+    ui.notifications?.info(
+      `Draw your ${toolType} realm shape, then right-click or press Enter to finish`
+    );
+
     // For now, let's use the standard Region creation and convert it afterwards
     // We'll hook into the region creation to set the proper type
     const originalCreate = (canvas as any).scene.createEmbeddedDocuments;
-    (canvas as any).scene.createEmbeddedDocuments = async function(documentType: string, data: any[], options: any = {}) {
+    (canvas as any).scene.createEmbeddedDocuments = async function (
+      documentType: string,
+      data: any[],
+      options: any = {}
+    ) {
       if (documentType === 'Region' && Array.isArray(data)) {
         // Modify region data to be realm (using flags instead of type)
         data = data.map(regionData => ({
@@ -321,22 +344,21 @@ function createRealmTool(toolType: 'polygon' | 'rectangle' | 'circle') {
           }
         }));
       }
-      
+
       const result = await originalCreate.call(this, documentType, data, options);
-      
+
       // Restore original function
       (canvas as any).scene.createEmbeddedDocuments = originalCreate;
-      
+
       // Open realm properties for the created realm
       if (documentType === 'Region' && result.length > 0) {
         setTimeout(() => {
           RealmPropertiesDialog.open(result[0]);
         }, 100);
       }
-      
+
       return result;
     };
-    
   } catch (error) {
     console.error('Realms & Reaches | Error in createRealmTool:', error);
     ui.notifications?.error('Failed to start realm creation');
@@ -348,7 +370,7 @@ function createRealmTool(toolType: 'polygon' | 'rectangle' | 'circle') {
  */
 function openRealmCreationDialog() {
   console.log('Realms & Reaches | Opening realm creation dialog');
-  
+
   const dialog = new Dialog({
     title: 'Create Realm',
     content: `
@@ -379,13 +401,13 @@ function openRealmCreationDialog() {
               console.error('Realms & Reaches | Form not found');
               return;
             }
-            
+
             const formData = new FormData(form);
             const name = formData.get('name') as string;
             const method = formData.get('method') as string;
-            
+
             console.log('Realms & Reaches | Form data:', { name, method });
-            
+
             if (method === 'properties') {
               // Create a small default realm and open properties
               createDefaultRealm(name);
@@ -408,7 +430,7 @@ function openRealmCreationDialog() {
     },
     default: 'create'
   });
-  
+
   dialog.render(true);
 }
 
@@ -417,31 +439,37 @@ function openRealmCreationDialog() {
  */
 async function createDefaultRealm(name: string) {
   console.log('Realms & Reaches | Creating default realm:', name);
-  
+
   try {
     const scene = (canvas as any)?.scene;
     if (!scene) {
       ui.notifications?.error('No active scene found');
       return;
     }
-    
+
     // Create a small default polygon in the center of the scene
     const centerX = scene.width / 2;
     const centerY = scene.height / 2;
     const size = 200;
-    
+
     const regionData = {
       name: name || 'New Realm',
       color: '#ff6b35',
-      shapes: [{
-        type: 'polygon',
-        points: [
-          centerX - size, centerY - size,
-          centerX + size, centerY - size,
-          centerX + size, centerY + size,
-          centerX - size, centerY + size
-        ]
-      }],
+      shapes: [
+        {
+          type: 'polygon',
+          points: [
+            centerX - size,
+            centerY - size,
+            centerX + size,
+            centerY - size,
+            centerX + size,
+            centerY + size,
+            centerX - size,
+            centerY + size
+          ]
+        }
+      ],
       flags: {
         'realms-and-reaches': {
           isRealm: true,
@@ -454,23 +482,27 @@ async function createDefaultRealm(name: string) {
         }
       }
     };
-    
+
     console.log('Realms & Reaches | Creating region with data:', regionData);
-    
+
     const regions = await scene.createEmbeddedDocuments('Region', [regionData]);
     console.log('Realms & Reaches | Created regions:', regions);
-    
+
     if (regions.length > 0) {
       setTimeout(() => {
         RealmPropertiesDialog.open(regions[0]);
       }, 100);
-      ui.notifications?.info('Realm created! Adjust the shape and add tags in the properties dialog.');
+      ui.notifications?.info(
+        'Realm created! Adjust the shape and add tags in the properties dialog.'
+      );
     } else {
       ui.notifications?.error('Failed to create realm region');
     }
   } catch (error) {
     console.error('Realms & Reaches | Error creating default realm:', error);
-    ui.notifications?.error('Failed to create realm: ' + (error instanceof Error ? error.message : String(error)));
+    ui.notifications?.error(
+      'Failed to create realm: ' + (error instanceof Error ? error.message : String(error))
+    );
   }
 }
 
@@ -500,16 +532,16 @@ Hooks.on('getRegionContextOptions', (html: JQuery, options: any[]) => {
 /**
  * Optionally override Region sheet for realm types to show custom UI
  */
-Hooks.on('renderRegionConfig', (app: any, html: any, data: any) => {
+Hooks.on('renderRegionConfig', (app: any, html: any, _data: any) => {
   try {
     const region = app.document;
     if (!region?.flags?.['realms-and-reaches']?.isRealm) {
       return;
     }
-    
+
     // Convert html to jQuery if it's not already
     const $html = html.jquery ? html : $(html);
-    
+
     // Add a "Realm Tags" section to the Identity tab
     const identityTab = $html.find('.tab[data-tab="identity"]');
     if (identityTab.length) {
@@ -526,7 +558,7 @@ Hooks.on('renderRegionConfig', (app: any, html: any, data: any) => {
         </div>
       `;
       identityTab.append(tagsHtml);
-      
+
       // Add click handler for edit button
       $html.find('.edit-realm-tags').on('click', () => {
         RealmPropertiesDialog.open(region as any);

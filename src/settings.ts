@@ -2,7 +2,6 @@
  * Module Settings Registration
  */
 
-
 export function registerSettings(): void {
   // Auto-save realms when modified
   game.settings.register('realms-and-reaches', 'autoSave', {
@@ -18,7 +17,7 @@ export function registerSettings(): void {
   game.settings.register('realms-and-reaches', 'defaultTags', {
     name: 'Default Realm Tags',
     hint: 'Comma-separated list of tags applied to new realms',
-    scope: 'world', 
+    scope: 'world',
     config: true,
     type: String,
     default: 'biome:unknown'

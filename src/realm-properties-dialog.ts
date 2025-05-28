@@ -1,6 +1,6 @@
 /**
  * RealmPropertiesDialog - Dialog for editing realm properties
- * 
+ *
  * Provides a user interface for editing realm names, tags, and other properties.
  * Integrates with the TagSystem for validation and suggestions.
  * Now works with Region documents instead of custom RealmData objects.
@@ -12,7 +12,7 @@ import { TagSystem } from './tag-system';
 // Type for realm regions
 type RealmRegion = RegionDocument & {
   flags: {
-    "realms-and-reaches"?: {
+    'realms-and-reaches'?: {
       isRealm?: boolean;
       tags?: string[];
       metadata?: {
@@ -27,21 +27,21 @@ type RealmRegion = RegionDocument & {
 // Helper functions from RealmManager
 class RealmHelpers {
   static getTags(region: RealmRegion): string[] {
-    return region.flags["realms-and-reaches"]?.tags || [];
+    return region.flags['realms-and-reaches']?.tags || [];
   }
 
   static async addTag(region: RealmRegion, tag: string): Promise<void> {
     const currentTags = this.getTags(region);
     if (!currentTags.includes(tag)) {
       const newTags = [...currentTags, tag];
-      await region.setFlag("realms-and-reaches", "tags", newTags);
+      await region.setFlag('realms-and-reaches', 'tags', newTags);
     }
   }
 
   static async removeTag(region: RealmRegion, tag: string): Promise<void> {
     const currentTags = this.getTags(region);
     const newTags = currentTags.filter(t => t !== tag);
-    await region.setFlag("realms-and-reaches", "tags", newTags);
+    await region.setFlag('realms-and-reaches', 'tags', newTags);
   }
 
   static hasTag(region: RealmRegion, tag: string): boolean {
@@ -49,9 +49,9 @@ class RealmHelpers {
   }
 
   static async touch(region: RealmRegion): Promise<void> {
-    const metadata = region.flags["realms-and-reaches"]?.metadata || {};
+    const metadata = region.flags['realms-and-reaches']?.metadata || {};
     metadata.modified = new Date().toISOString();
-    await region.setFlag("realms-and-reaches", "metadata", metadata);
+    await region.setFlag('realms-and-reaches', 'metadata', metadata);
   }
 }
 
@@ -77,21 +77,24 @@ export class RealmPropertiesDialog extends Dialog {
 
   constructor(realm: RealmRegion, options: Partial<Dialog.Options> = {}) {
     const data = RealmPropertiesDialog.prepareData(realm);
-    
-    super({
-      title: data.isNew ? 'Create New Realm' : `Edit Realm: ${realm.name}`,
-      content: '',
-      buttons: {},
-      default: '',
-      close: () => null
-    }, {
-      ...options,
-      classes: ['realm-properties-dialog'],
-      width: 500,
-      height: 'auto',
-      resizable: true,
-      template: 'modules/realms-and-reaches/templates/realm-properties.hbs'
-    });
+
+    super(
+      {
+        title: data.isNew ? 'Create New Realm' : `Edit Realm: ${realm.name}`,
+        content: '',
+        buttons: {},
+        default: '',
+        close: () => null
+      },
+      {
+        ...options,
+        classes: ['realm-properties-dialog'],
+        width: 500,
+        height: 'auto',
+        resizable: true,
+        template: 'modules/realms-and-reaches/templates/realm-properties.hbs'
+      }
+    );
 
     this.realm = realm;
     this.realmManager = RealmManager.getInstance();
@@ -149,15 +152,16 @@ export class RealmPropertiesDialog extends Dialog {
 
     // Tag management
     addTagBtn.on('click', async () => await this.addTag(tagInput.val() as string, tagList));
-    tagInput.on('keypress', async (event) => {
-      if (event.which === 13) { // Enter key
+    tagInput.on('keypress', async event => {
+      if (event.which === 13) {
+        // Enter key
         event.preventDefault();
         await this.addTag(tagInput.val() as string, tagList);
       }
     });
 
     // Tag removal
-    html.on('click', '.tag-remove', async (event) => {
+    html.on('click', '.tag-remove', async event => {
       const tag = $(event.currentTarget).data('tag');
       await this.removeTag(tag, tagList);
     });
@@ -168,7 +172,7 @@ export class RealmPropertiesDialog extends Dialog {
 
     // Form validation
     nameInput.on('input', () => this.validateForm(form));
-    
+
     // Initial validation
     this.validateForm(form);
     this.updateTagSuggestions('');
@@ -181,7 +185,7 @@ export class RealmPropertiesDialog extends Dialog {
     if (!tagValue?.trim()) return;
 
     const tag = tagValue.trim().toLowerCase();
-    
+
     // Validate tag format
     const validation = TagSystem.getInstance().validateTag(tag);
     if (!validation.valid) {
@@ -198,16 +202,15 @@ export class RealmPropertiesDialog extends Dialog {
     // Add tag to realm
     try {
       await RealmHelpers.addTag(this.realm, tag);
-      
+
       // Update UI
       this.renderTagItem(tag, tagList);
-      
+
       // Clear input
       this.element?.find('#new-tag').val('');
-      
+
       // Update form validation
       this.validateForm(this.element?.find('.realm-form') as JQuery);
-      
     } catch (error) {
       ui.notifications?.error(`Failed to add tag: ${error}`);
     }
@@ -219,10 +222,10 @@ export class RealmPropertiesDialog extends Dialog {
   private async removeTag(tag: string, tagList: JQuery): Promise<void> {
     try {
       await RealmHelpers.removeTag(this.realm, tag);
-      
+
       // Remove from UI
       tagList.find(`[data-tag="${tag}"]`).remove();
-      
+
       // Update form validation
       this.validateForm(this.element?.find('.realm-form') as JQuery);
     } catch (error) {
@@ -242,7 +245,7 @@ export class RealmPropertiesDialog extends Dialog {
         </button>
       </div>
     `;
-    
+
     tagList.append(tagHtml);
   }
 
@@ -268,13 +271,24 @@ export class RealmPropertiesDialog extends Dialog {
     // Add static common suggestions if no partial input
     if (!partial.trim()) {
       const commonTags = [
-        'biome:forest', 'biome:desert', 'biome:mountain', 'biome:swamp',
-        'terrain:dense', 'terrain:sparse', 'terrain:rocky',
-        'climate:temperate', 'climate:arctic', 'climate:tropical',
-        'travel_speed:0.5', 'travel_speed:0.75', 'travel_speed:1.0',
-        'resources:timber', 'resources:game', 'resources:minerals'
+        'biome:forest',
+        'biome:desert',
+        'biome:mountain',
+        'biome:swamp',
+        'terrain:dense',
+        'terrain:sparse',
+        'terrain:rocky',
+        'climate:temperate',
+        'climate:arctic',
+        'climate:tropical',
+        'travel_speed:0.5',
+        'travel_speed:0.75',
+        'travel_speed:1.0',
+        'resources:timber',
+        'resources:game',
+        'resources:minerals'
       ];
-      
+
       commonTags.forEach(tag => {
         if (!existingTags.includes(tag)) {
           datalist.append(`<option value="${tag}">`);
@@ -294,7 +308,7 @@ export class RealmPropertiesDialog extends Dialog {
     }
 
     const validation = TagSystem.getInstance().validateTag(value.trim());
-    
+
     if (validation.valid) {
       input.removeClass('invalid').addClass('valid');
     } else {
@@ -309,12 +323,12 @@ export class RealmPropertiesDialog extends Dialog {
   private validateForm(form: JQuery): boolean {
     const nameInput = form.find('#realm-name');
     const saveBtn = form.find('.save-realm');
-    
+
     const name = nameInput.val() as string;
     const isValid = name?.trim().length > 0;
-    
+
     saveBtn.prop('disabled', !isValid);
-    
+
     return isValid;
   }
 
@@ -325,7 +339,7 @@ export class RealmPropertiesDialog extends Dialog {
     try {
       const nameInput = this.element?.find('#realm-name');
       const newName = nameInput?.val() as string;
-      
+
       if (!newName?.trim()) {
         ui.notifications?.error('Realm name is required');
         return;
@@ -348,7 +362,6 @@ export class RealmPropertiesDialog extends Dialog {
 
       // Close dialog
       this.close();
-      
     } catch (error) {
       console.error('Failed to save realm:', error);
       ui.notifications?.error('Failed to save realm');
@@ -378,11 +391,11 @@ export class RealmPropertiesDialog extends Dialog {
       try {
         await this.realmManager.deleteRealm(this.realm.id);
         ui.notifications?.info(`Deleted realm: ${this.realm.name}`);
-        
+
         // Refresh the canvas layer
         const layer = (canvas as any)?.layers?.realms;
         layer?.refresh();
-        
+
         this.close();
       } catch (error) {
         console.error('Failed to delete realm:', error);

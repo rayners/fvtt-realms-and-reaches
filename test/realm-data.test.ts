@@ -46,7 +46,7 @@ describe('RealmData', () => {
     it('should remove tags by key', () => {
       realm.addTag('resources:timber');
       realm.addTag('resources:game');
-      
+
       const removed = realm.removeTagByKey('resources');
       expect(removed).toBe(2);
       expect(realm.hasTag('resources')).toBe(false);
@@ -56,7 +56,7 @@ describe('RealmData', () => {
       realm.addTag('resources:timber');
       realm.addTag('resources:game');
       realm.addTag('custom:haunted');
-      
+
       const resourceTags = realm.getTagsWithPrefix('resources');
       expect(resourceTags).toEqual(['resources:game', 'resources:timber']);
     });
@@ -164,7 +164,7 @@ describe('RealmData', () => {
 
     it('should update modified timestamp on touch', () => {
       const originalModified = realm.metadata.modified;
-      
+
       // Small delay to ensure timestamp difference
       setTimeout(() => {
         realm.touch();
@@ -174,7 +174,7 @@ describe('RealmData', () => {
 
     it('should update modified timestamp when adding tags', () => {
       const originalModified = realm.metadata.modified;
-      
+
       setTimeout(() => {
         realm.addTag('custom:test');
         expect(realm.metadata.modified).not.toBe(originalModified);
@@ -185,7 +185,7 @@ describe('RealmData', () => {
   describe('Serialization', () => {
     it('should serialize to object correctly', () => {
       const obj = realm.toObject();
-      
+
       expect(obj.id).toBe(realm.id);
       expect(obj.name).toBe(realm.name);
       expect(obj.geometry).toEqual(realm.geometry);
@@ -196,7 +196,7 @@ describe('RealmData', () => {
     it('should deserialize from object correctly', () => {
       const obj = realm.toObject();
       const newRealm = RealmData.fromObject(obj);
-      
+
       expect(newRealm.id).toBe(realm.id);
       expect(newRealm.name).toBe(realm.name);
       expect(newRealm.getTags()).toEqual(realm.getTags());
@@ -205,11 +205,11 @@ describe('RealmData', () => {
 
     it('should clone correctly', () => {
       const clone = realm.clone();
-      
+
       expect(clone.id).toBe(realm.id);
       expect(clone.name).toBe(realm.name);
       expect(clone.getTags()).toEqual(realm.getTags());
-      
+
       // Ensure it's a deep copy
       clone.addTag('custom:cloned');
       expect(realm.hasTag('custom:cloned')).toBe(false);
@@ -221,9 +221,9 @@ describe('RealmData', () => {
       const emptyRealm = new RealmData({
         geometry: { type: 'polygon', points: [] }
       });
-      
+
       expect(emptyRealm.containsPoint(0, 0)).toBe(false);
-      
+
       const bounds = emptyRealm.getBounds();
       expect(bounds).toEqual({ x: 0, y: 0, width: 0, height: 0 });
     });
@@ -232,14 +232,14 @@ describe('RealmData', () => {
       const invalidRealm = new RealmData({
         geometry: { type: 'invalid' as any }
       });
-      
+
       expect(invalidRealm.containsPoint(0, 0)).toBe(false);
     });
 
     it('should generate unique IDs when not provided', () => {
       const realm1 = new RealmData();
       const realm2 = new RealmData();
-      
+
       expect(realm1.id).not.toBe(realm2.id);
       expect(realm1.id).toMatch(/^[a-zA-Z0-9]+$/);
     });
@@ -251,7 +251,7 @@ describe('RealmData', () => {
           points: [0, 0, 100, 100] // Only 2 points (4 coordinates)
         }
       });
-      
+
       expect(invalidPolygon.containsPoint(50, 50)).toBe(false);
     });
   });
