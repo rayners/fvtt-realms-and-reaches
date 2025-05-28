@@ -6,6 +6,7 @@
   "scripts": {
     "build": "rollup -c",
     "watch": "rollup -c -w", 
+    "link": "./link-module.sh",
     "lint": "eslint src",
     "lint:fix": "eslint src --fix",
     "format": "prettier --write \"src/**/*.{ts,js,json}\" \"test/**/*.{ts,js}\" \"*.{js,json,md}\"",

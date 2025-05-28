@@ -19,9 +19,153 @@
   /* Styling for realm drawing and editing tools */
 }
 
-/* Realm properties panel */
+/* Realm properties dialog */
+.realm-properties-dialog {
+  .window-content {
+    padding: 0;
+  }
+}
+
 .realm-properties {
-  /* Styling for the realm properties editor */
+  padding: 1rem;
+  
+  .sheet-header {
+    border-bottom: 1px solid #ccc;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    
+    h2 {
+      margin: 0;
+      font-size: 1.2em;
+      color: #333;
+    }
+  }
+  
+  .realm-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    
+    label {
+      font-weight: bold;
+      font-size: 0.9em;
+      color: #555;
+    }
+    
+    input[type="text"] {
+      padding: 0.5rem;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 0.9em;
+      
+      &:focus {
+        outline: none;
+        border-color: #4a90e2;
+        box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
+      }
+      
+      &.valid {
+        border-color: #28a745;
+      }
+      
+      &.invalid {
+        border-color: #dc3545;
+      }
+    }
+  }
+  
+  .tag-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    min-height: 2rem;
+    border: 1px solid #e9ecef;
+    border-radius: 4px;
+    padding: 0.5rem;
+    background: #f8f9fa;
+  }
+  
+  .tag-input-group {
+    display: flex;
+    gap: 0.5rem;
+    
+    input {
+      flex: 1;
+    }
+    
+    button {
+      padding: 0.5rem;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      background: #fff;
+      cursor: pointer;
+      
+      &:hover {
+        background: #f8f9fa;
+        border-color: #4a90e2;
+      }
+      
+      i {
+        color: #4a90e2;
+      }
+    }
+  }
+  
+  .sheet-footer {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: flex-end;
+    padding-top: 1rem;
+    border-top: 1px solid #e9ecef;
+    
+    button {
+      padding: 0.5rem 1rem;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      background: #fff;
+      cursor: pointer;
+      font-size: 0.9em;
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+      
+      &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+      
+      &.save-realm {
+        background: #28a745;
+        color: white;
+        border-color: #28a745;
+        
+        &:hover:not(:disabled) {
+          background: #218838;
+        }
+      }
+      
+      &.delete-realm {
+        background: #dc3545;
+        color: white;
+        border-color: #dc3545;
+        
+        &:hover {
+          background: #c82333;
+        }
+      }
+      
+      &:hover:not(:disabled) {
+        background: #f8f9fa;
+        border-color: #4a90e2;
+      }
+    }
+  }
 }
 
 /* Realm visual rendering */
@@ -48,14 +192,92 @@
 }
 
 .tag-item {
-  /* Individual tag styling */
   background: #e9ecef;
-  border-radius: 3px;
-  padding: 2px 6px;
-  margin: 2px;
-  display: inline-block;
+  border: 1px solid #ced4da;
+  border-radius: 20px;
+  padding: 0.25rem 0.5rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.8em;
+  max-width: 200px;
   
-  &.tag-biome { background: #d4edda; }
-  &.tag-terrain { background: #f8d7da; }
-  &.tag-custom { background: #e2e3e5; }
+  .tag-text {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex: 1;
+  }
+  
+  .tag-remove {
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    color: #6c757d;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    
+    &:hover {
+      background: #dc3545;
+      color: white;
+    }
+    
+    i {
+      font-size: 10px;
+    }
+  }
+  
+  // Color coding by namespace
+  &[data-tag^="biome:"] {
+    background: #d4edda;
+    border-color: #c3e6cb;
+    color: #155724;
+  }
+  
+  &[data-tag^="terrain:"] {
+    background: #f8d7da;
+    border-color: #f5c6cb;
+    color: #721c24;
+  }
+  
+  &[data-tag^="climate:"] {
+    background: #cce7ff;
+    border-color: #b3d9ff;
+    color: #0c5aa6;
+  }
+  
+  &[data-tag^="travel_speed:"] {
+    background: #fff3cd;
+    border-color: #ffeaa7;
+    color: #856404;
+  }
+  
+  &[data-tag^="resources:"] {
+    background: #d1ecf1;
+    border-color: #bee5eb;
+    color: #0c5460;
+  }
+  
+  &[data-tag^="elevation:"] {
+    background: #e2e3e5;
+    border-color: #d6d8db;
+    color: #383d41;
+  }
+  
+  &[data-tag^="custom:"] {
+    background: #f4e5ff;
+    border-color: #e1bee7;
+    color: #6f42c1;
+  }
+  
+  &[data-tag^="module:"] {
+    background: #ffe0b3;
+    border-color: #ffcc80;
+    color: #e65100;
+  }
 }

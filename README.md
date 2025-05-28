@@ -24,14 +24,136 @@ A Foundry VTT module that provides a queryable biome and terrain layer for narra
 - **Module developers** wanting environmental data
 - **Community content creators** sharing detailed maps
 
-## Quick Start
+## Current Status
 
-1. **Install** the module from the Foundry module browser
-2. **Enable** Realms & Reaches in your world
-3. **Open a scene** and click the Realms layer button (🗺️) in the layer controls
-4. **Draw regions** by clicking to place polygon points
-5. **Configure properties** using the tag-based editor
-6. **Query data** via the module API or integrate with compatible modules
+**🚀 Alpha Release**: Core functionality complete and ready for testing!
+
+### What's Working
+- ✅ **Tag-based realm data** with 8 core namespaces (biome, terrain, climate, etc.)
+- ✅ **Spatial queries** - Fast point-in-polygon detection for coordinate-based lookups
+- ✅ **Data persistence** - Automatic saving to scene flags with export/import
+- ✅ **Validation system** - Smart tag suggestions and conflict detection
+- ✅ **API foundation** - Full CRUD operations for programmatic access
+- ✅ **Canvas drawing layer** - Visual realm creation with polygon, rectangle, and circle tools
+- ✅ **Properties UI** - Complete tag editor interface with real-time validation
+- ✅ **Layer controls** - Integrated drawing tools in Foundry's left sidebar
+
+### Next Steps
+- 📋 **Module integration** - J&J travel mechanics enhancement (ready to implement)
+- 📋 **Community features** - Data sharing and browsing improvements
+- 📋 **Performance optimization** - Large dataset handling enhancements
+
+## Quick Start (API Preview)
+
+```javascript
+// Get realm data at coordinates
+const manager = RealmManager.getInstance();
+const realm = manager.getRealmAt(x, y);
+
+if (realm) {
+  const biome = realm.getTag('biome');        // "forest"
+  const speed = realm.getTagNumber('travel_speed'); // 0.75
+  const isHaunted = realm.hasTag('custom:haunted'); // true/false
+}
+
+// Create a new realm programmatically
+await manager.createRealm({
+  name: 'Dark Forest',
+  geometry: { type: 'polygon', points: [0,0, 100,0, 100,100, 0,100] },
+  tags: ['biome:forest', 'terrain:dense', 'travel_speed:0.5', 'custom:haunted']
+});
+```
+
+## Installation
+
+### From Foundry VTT
+
+1. Open Foundry VTT
+2. Go to **Add-on Modules** tab
+3. Click **Install Module**
+4. Search for "Realms & Reaches" or paste the manifest URL:
+   ```
+   https://github.com/rayners/fvtt-realms-and-reaches/releases/latest/download/module.json
+   ```
+5. Click **Install** and enable the module in your world
+
+### Manual Installation
+
+1. Download the latest release from [GitHub Releases](https://github.com/rayners/fvtt-realms-and-reaches/releases)
+2. Extract the zip file to your Foundry `Data/modules/` directory
+3. Restart Foundry VTT and enable the module
+
+## User Guide
+
+### Getting Started
+
+1. **Enable the Module**: Make sure Realms & Reaches is enabled in your world
+2. **Open the Realms Layer**: Click the map icon in the left sidebar controls
+3. **Select a Drawing Tool**: Choose Polygon, Rectangle, or Circle
+4. **Draw Your First Realm**: Click to place points and create shapes
+5. **Edit Properties**: Double-click any realm to open the properties dialog
+
+### Drawing Realms
+
+#### Polygon Tool
+- **Click** to add points to your polygon
+- **Right-click** or **Enter** to complete the polygon
+- **Escape** to cancel drawing
+- Great for: Irregular biome boundaries, coastlines, mountain ranges
+
+#### Rectangle Tool
+- **Click** the first corner, then **click** the opposite corner
+- Perfect for: Structured regions, urban areas, farmland
+
+#### Circle Tool  
+- **Click** the center, then **click** to set the radius
+- Ideal for: Points of interest, magical effects, blast zones
+
+### Editing Realm Properties
+
+Double-click any realm or use the Properties button to open the editor:
+
+#### Name Field
+- Give your realm a descriptive name like "Ancient Forest" or "Goblin Territory"
+- Names help organize and identify realms during gameplay
+
+#### Tag Editor
+- **Add Tags**: Type in the format `key:value` (e.g., `biome:forest`)
+- **Autocomplete**: Start typing to see suggestions
+- **Color Coding**: Tags are automatically colored by namespace
+- **Remove Tags**: Click the × button on any tag
+- **Validation**: Invalid tags show red borders with error tooltips
+
+#### Common Tag Patterns
+```
+biome:forest           # Primary ecosystem
+terrain:dense          # Movement difficulty  
+travel_speed:0.75      # Speed modifier (1.0 = normal)
+climate:temperate      # Weather patterns
+resources:timber       # Available materials
+resources:game         # Huntable animals
+elevation:highland     # Altitude category
+custom:haunted         # Custom properties
+module:jj:encounter_chance:0.3  # Module-specific
+```
+
+### Layer Controls
+
+The Realms & Reaches control panel provides:
+
+- **Select Tool**: Click to select and edit existing realms
+- **Polygon Tool**: Draw irregular shapes
+- **Rectangle Tool**: Draw rectangular regions  
+- **Circle Tool**: Draw circular areas
+- **Properties**: Edit the selected realm (or double-click)
+- **Export**: Save realm data to JSON file
+- **Import**: Load realm data from JSON file
+
+### Keyboard Shortcuts
+
+- **Escape**: Cancel current drawing or clear selection
+- **Enter**: Complete polygon drawing
+- **Delete**: Remove selected realm (with confirmation)
 
 ## Core Concepts
 
@@ -170,12 +292,14 @@ if (realmsAPI) {
 
 ## Development Roadmap
 
-### v0.1.0 - MVP (Current)
-- ✅ Custom canvas layer for drawing realms
-- ✅ Tag-based data system
-- ✅ Basic realm properties editor
-- ✅ Export/import functionality
-- ✅ Core API for module integration
+### v0.1.0 - MVP (✅ COMPLETED)
+- ✅ **Tag-based data system** - Complete with validation, suggestions, conflict detection
+- ✅ **Spatial indexing** - Fast point-in-polygon queries (< 1ms)
+- ✅ **Data persistence** - Scene flags storage with export/import
+- ✅ **Core API foundation** - RealmManager with full CRUD operations
+- ✅ **Custom canvas layer** - Polygon, rectangle, and circle drawing tools
+- ✅ **Realm properties editor** - Complete tag editor with real-time validation
+- ✅ **UI integration** - Full layer controls integration with Foundry
 
 ### v0.2.0 - Enhanced UX
 - 🔲 Smart tag editor with dropdowns

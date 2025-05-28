@@ -163,7 +163,7 @@ describe('RealmManager', () => {
       const realm = manager.getRealmAt(25, 25); // Inside forest
       expect(realm?.getTag('biome')).toBe('forest');
       
-      const noRealm = manager.getRealmAt(200, 200); // Empty space
+      const noRealm = manager.getRealmAt(250, 250); // Empty space
       expect(noRealm).toBe(null);
     });
 

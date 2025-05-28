@@ -385,4 +385,28 @@ export class TagSystem {
 
     return matrix[b.length][a.length];
   }
+
+  // Static convenience methods for API
+  
+  /**
+   * Static method to validate a tag
+   */
+  static validateTag(tag: string): boolean {
+    return TagSystem.getInstance().validateTag(tag).valid;
+  }
+
+  /**
+   * Static method to get suggestions for a namespace
+   */
+  static getSuggestions(namespace: string): string[] {
+    const ns = TAG_NAMESPACES[namespace];
+    return ns?.suggestions || [];
+  }
+
+  /**
+   * Static method to get tag suggestions based on partial input
+   */
+  static getTagSuggestions(partial: string, existingTags: string[] = []): TagSuggestion[] {
+    return TagSystem.getInstance().getSuggestions(partial, existingTags);
+  }
 }
