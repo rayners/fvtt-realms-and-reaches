@@ -396,6 +396,66 @@ describe('RealmData', () => {
 - **Memory usage**: ✅ Efficient Set-based tag storage, lazy spatial indexing
 - **Real-time updates**: ✅ Event-driven architecture implemented
 
+### Foundry VTT Core Integration Patterns (LEARNED)
+
+**Scene Configuration Dialog Structure** (from foundry-app analysis):
+
+*SceneConfig Application Architecture*:
+- **Class**: `SceneConfig` extends `DocumentSheetV2` with `HandlebarsApplicationMixin`
+- **Template System**: Modular parts system with separate templates for tabs, basics, grid, lighting, ambience, footer
+- **Tab Management**: Four main tabs with icon-based navigation and separate rendering contexts
+- **Form Processing**: Advanced form data handling with preview capabilities and validation
+
+*Template Structure Analysis*:
+- **Tab Structure**: Uses `data-tab` attributes (`basics`, `grid`, `lighting`, `ambience`)
+- **Field IDs**: Follow pattern `{rootId}-fieldname` (e.g., `{rootId}-initial.scale`)
+- **Template Location**: `/templates/scene/config/basics.hbs` contains the main form
+- **Handlebars Helpers**: Uses `formGroup`, `formInput`, `localize` for consistent UI patterns
+- **Form Organization**: Logical grouping with `.form-group` and `.form-group.inline` classes
+
+*Scene Config Template Structure*:
+```handlebars
+<!-- from foundry-app/templates/scene/config/basics.hbs -->
+{{formGroup fields.name value=source.name rootId=rootId}}
+<div class="form-group">
+  <label for="{{rootId}}-ownership.default">{{localize "SCENE.Accessibility"}}</label>
+  <!-- Navigation and ownership controls -->
+</div>
+{{formGroup fields.navName value=source.navName rootId=rootId}}
+{{formGroup fields.background.fields.src value=source.background.src rootId=rootId}}
+<!-- Background/Foreground settings -->
+<div class="form-group inline">
+  <label>{{localize "SCENE.InitialView"}}</label>
+  <div class="form-fields">
+    <button type="button" data-action="capturePosition">
+      <i class="fa-solid fa-crop-simple fa-fw"></i>
+    </button>
+    <label for="{{rootId}}-initial.x">{{localize "DOCUMENT.FIELDS.x.label"}}</label>
+    {{formInput fields.initial.fields.x value=source.initial.x id=(concat rootId "-initial.x")}}
+    <!-- initial.y and initial.scale inputs follow same pattern -->
+  </div>
+  <p class="hint">{{localize "SCENE.InitialViewHint"}}</p>
+</div>
+```
+
+**Hook Integration Best Practices**:
+- Use `renderSceneConfig` hook for scene dialog customization
+- Check for `app?.object` to ensure valid scene document before proceeding
+- Target semantic selectors like `label:contains("Initial View")` rather than field IDs
+- Provide multiple fallback insertion points for robustness:
+  1. After Initial View section (primary target)
+  2. After scale input field (secondary target) 
+  3. End of first tab (fallback)
+- Field IDs follow `{rootId}-fieldname` pattern but aren't reliable for targeting
+- Debug with console logging to understand actual DOM structure in different Foundry versions
+- Use jQuery-compatible selectors since Foundry may pass jQuery objects
+
+**Integration Points for Custom Controls**:
+- **Initial View Section**: Reliable insertion point present in all scene configs
+- **Form Groups**: Use `.form-group` structure to match native styling
+- **Tab Content**: Insert at end of `.tab[data-tab="basics"]` as final fallback
+- **Field Naming**: Follow `flags.module-name.property` convention for custom fields
+
 ### Canvas Layer Gotchas (RESEARCH COMPLETE)
 
 - **Layer registration**: Must happen in correct Foundry hook
@@ -433,6 +493,99 @@ describe('RealmData', () => {
 - **Async operations**: Proper async/await in beforeEach
 - **Mock console.warn**: Handle expected error conditions
 - **Event testing**: Custom event verification
+
+## Foundry VTT Core Application Insights
+
+### Scene Configuration Integration (FOU-73 Implementation)
+
+**Current Implementation Status**: ✅ **COMPLETED** - Scene config travel controls integration
+
+**Core Findings from Foundry Application Analysis**:
+
+*Application Structure*:
+- SceneConfig uses modular template system with separate rendering contexts
+- Scene data accessed via `app.object` property containing the Scene document
+- Form fields generated dynamically using Handlebars helpers
+- Multiple insertion strategies needed for compatibility across Foundry versions
+
+*DOM Structure Insights*:
+- Template generates semantic HTML structure with consistent class patterns
+- Initial View section always present and reliably targetable
+- Form follows `.form-group` > `label` + `.form-fields` pattern
+- Insertion after Initial View provides good visual placement
+
+*Implementation Strategy*:
+```javascript
+// Corrected insertion pattern from module.ts:306-334
+// IMPORTANT: Template shows "Initial View" but renders as "Initial View Position"
+const insertAfter = $html.find('label:contains("Initial View Position")').closest('.form-group');
+if (insertAfter.length) {
+  console.log('Realms & Reaches | Inserting after Initial View Position label');
+  insertAfter.after(travelControlsHtml);
+} else {
+  // Fallback for template text vs rendered text discrepancy
+  const initialViewFallback = $html.find('label:contains("Initial View")').closest('.form-group');
+  if (initialViewFallback.length) {
+    initialViewFallback.after(travelControlsHtml);
+  } else {
+    // Use input name instead of ID pattern for better reliability
+    const scaleInput = $html.find('input[name="initial.scale"]').closest('.form-group');
+    if (scaleInput.length) {
+      scaleInput.after(travelControlsHtml);
+    } else {
+      $html.find('.tab').first().append(travelControlsHtml);
+    }
+  }
+}
+```
+
+*Custom Field Integration*:
+- Travel controls use `flags.realms-and-reaches.travelEnabled` naming convention
+- Auto-detection logic based on grid type and distance units
+- Checkbox and select controls follow Foundry's native styling patterns
+- Help text provides clear explanation of auto-detection logic
+
+**Travel Scale Detection Logic**:
+```javascript
+// Smart detection with manual override support
+function detectTravelScale(scene) {
+  // Check if travel controls are disabled for this scene
+  const travelEnabled = scene.getFlag('realms-and-reaches', 'travelEnabled');
+  if (travelEnabled === false) return 'none';
+  
+  // Check for manual override first
+  const manualScale = scene.getFlag('realms-and-reaches', 'travelScale');
+  if (manualScale && ['realm', 'region', 'none'].includes(manualScale)) {
+    return manualScale;
+  }
+  
+  // Auto-detect based on grid type and distance units
+  const gridType = scene.grid?.type; // 0=GRIDLESS, 1=SQUARE, 2=HEXAGONAL
+  const distanceUnit = scene.grid?.units?.toLowerCase() || '';
+  
+  if (gridType === 2) return 'realm'; // Hex grids = overland travel
+  if (gridType === 1) return 'region'; // Square grids = tactical scale
+  
+  // Distance unit fallbacks for gridless scenes
+  if (distanceUnit.includes('km') || distanceUnit.includes('mile')) return 'realm';
+  if (distanceUnit.includes('ft') || distanceUnit.includes('meter')) return 'region';
+  
+  return 'none';
+}
+```
+
+**Key Implementation Insights**:
+- **Template vs Rendered Text**: Template uses `{{localize "SCENE.InitialView"}}` but renders as "Initial View Position"
+- **Selector Strategy**: Target actual rendered text first, template text as fallback
+- **Field Identification**: Use `input[name="fieldname"]` selectors over ID patterns for reliability
+- **Debug Strategy**: Console logging shows actual DOM structure for troubleshooting
+
+**Integration Benefits**:
+- Seamless integration with native Foundry scene configuration
+- Intelligent travel scale detection reduces user configuration burden
+- Consistent with Foundry's form patterns and styling
+- Multi-fallback insertion strategy ensures compatibility across versions
+- Real-time auto-detection with manual override capabilities
 
 ## Module Release Strategy
 
