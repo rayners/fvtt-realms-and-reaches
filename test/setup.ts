@@ -1,82 +1,55 @@
 /**
  * Test setup for Realms & Reaches
- *
- * Configures the testing environment with mocks for Foundry VTT globals.
+ * 
+ * Uses the shared foundry-mocks.ts for comprehensive Foundry VTT mocking.
  */
 
-import { vi } from 'vitest';
+import { setupFoundryMocks, createMockScene, createMockRegion } from './foundry-mocks';
 
-// Mock Foundry globals
-global.foundry = {
-  utils: {
-    mergeObject: vi.fn((original, other) => ({ ...original, ...other })),
-    duplicate: vi.fn(obj => JSON.parse(JSON.stringify(obj))),
-    randomID: vi.fn(() => Math.random().toString(36).substr(2, 9))
+// Set up Foundry mocks with R&R-specific configuration
+setupFoundryMocks({
+  systemId: 'dnd5e', // R&R typically works with D&D 5e
+  user: { isGM: true, id: 'test-gm' },
+  includeCanvas: true, // R&R needs canvas for region layer
+  includeRegions: true
+});
+
+// Ensure foundry.utils.randomID is available for realm-data.ts
+if (!globalThis.foundry?.utils?.randomID) {
+  console.error('foundry.utils.randomID not available!', globalThis.foundry?.utils);
+}
+
+// R&R-specific enhancements
+if (globalThis.game) {
+  // Create a test scene with regions support
+  const testScene = createMockScene({
+    id: 'test-scene',
+    name: 'Test Scene',
+    width: 4000,
+    height: 3000
+  });
+
+  // Add a test region
+  const testRegion = createMockRegion({
+    id: 'test-region',
+    name: 'Test Realm',
+    flags: {
+      'realms-and-reaches': {
+        isRealm: true,
+        tags: ['forest', 'dangerous']
+      }
+    }
+  });
+
+  testScene.regions.set(testRegion.id, testRegion);
+  globalThis.game.scenes.set(testScene.id, testScene);
+
+  // Set up canvas with the test scene
+  if (globalThis.canvas) {
+    globalThis.canvas.scene = testScene;
+    globalThis.canvas.regions = {
+      activate: () => {},
+      deactivate: () => {}
+    };
   }
-};
-
-global.game = {
-  modules: new Map(),
-  settings: {
-    register: vi.fn(),
-    get: vi.fn()
-  },
-  scenes: {
-    get: vi.fn(),
-    current: null
-  },
-  user: {
-    isGM: true
-  },
-  i18n: {
-    localize: vi.fn(key => key)
-  }
-};
-
-global.canvas = {
-  scene: null,
-  realms: null
-};
-
-global.ui = {
-  notifications: {
-    info: vi.fn(),
-    warn: vi.fn(),
-    error: vi.fn()
-  }
-};
-
-global.Hooks = {
-  once: vi.fn(),
-  on: vi.fn(),
-  callAll: vi.fn()
-};
-
-// Mock PIXI
-global.PIXI = {
-  Graphics: vi.fn(() => ({
-    beginFill: vi.fn(),
-    drawPolygon: vi.fn(),
-    endFill: vi.fn(),
-    clear: vi.fn(),
-    destroy: vi.fn()
-  })),
-  Point: vi.fn((x, y) => ({ x, y }))
-};
-
-// Mock CanvasLayer
-global.CanvasLayer = class MockCanvasLayer {
-  constructor(options = {}) {
-    this.options = options;
-    this.name = options.name || 'mock';
-  }
-
-  static get layerOptions() {
-    return {};
-  }
-
-  activate() {}
-  deactivate() {}
-  draw() {}
-  tearDown() {}
-};
+}
