@@ -7,21 +7,56 @@ import { RealmManager } from '../src/realm-manager';
 import { RealmData } from '../src/realm-data';
 
 // Mock scene for testing
+const mockRegions = new Map();
+// Add filter method to regions map to match Foundry's Collection interface
+(mockRegions as any).filter = function(callback: (region: any) => boolean) {
+  const results: any[] = [];
+  for (const [id, region] of this.entries()) {
+    if (callback(region)) {
+      results.push(region);
+    }
+  }
+  return results;
+};
+
 const mockScene = {
   id: 'test-scene',
   name: 'Test Scene',
   width: 1000,
   height: 1000,
+  regions: mockRegions,
   getFlag: vi.fn(),
-  setFlag: vi.fn()
+  setFlag: vi.fn(),
+  createEmbeddedDocuments: vi.fn().mockImplementation(async (documentType, data) => {
+    // Create mock region documents and add them to the regions collection
+    const results = data.map((regionData: any) => {
+      const mockRegion = {
+        id: regionData.id || `region-${Math.random().toString(36).substr(2, 9)}`,
+        name: regionData.name || 'Test Region',
+        flags: regionData.flags || {},
+        shapes: regionData.shapes || [],
+        getFlag: vi.fn().mockImplementation((scope, key) => regionData.flags?.[scope]?.[key]),
+        setFlag: vi.fn(),
+        unsetFlag: vi.fn(),
+        update: vi.fn(),
+        delete: vi.fn(),
+        testPoint: vi.fn(() => false)
+      };
+      mockRegions.set(mockRegion.id, mockRegion);
+      return mockRegion;
+    });
+    return results;
+  }),
+  deleteEmbeddedDocuments: vi.fn().mockImplementation(async (documentType, ids) => {
+    ids.forEach((id: string) => mockRegions.delete(id));
+    return ids;
+  })
 };
 
 // Mock game globals
 global.game = {
   ...global.game,
-  scenes: {
-    get: vi.fn(id => (id === 'test-scene' ? mockScene : null))
-  },
+  scenes: new Map([['test-scene', mockScene]]),
   settings: {
     get: vi.fn(() => true) // Auto-save enabled
   },
