@@ -1185,6 +1185,7 @@ function updateRealmTagSuggestions(partial: string, region: any, $html: any): vo
       'biome:forest', 'biome:desert', 'biome:mountain', 'biome:swamp', 'biome:grassland',
       'terrain:dense', 'terrain:sparse', 'terrain:rocky', 'terrain:smooth',
       'climate:temperate', 'climate:arctic', 'climate:tropical', 'climate:arid',
+      'settlement:village', 'settlement:town', 'settlement:city',
       'travel_speed:0.5', 'travel_speed:0.75', 'travel_speed:1.0', 'travel_speed:1.25', 'travel_speed:1.5',
       'resources:timber', 'resources:game', 'resources:minerals', 'resources:freshwater',
       'elevation:lowland', 'elevation:highland', 'elevation:mountain',
@@ -1205,6 +1206,34 @@ function updateRealmTagSuggestions(partial: string, region: any, $html: any): vo
       if (!existingTags.includes(suggestion.tag)) {
         datalist.append(`<option value="${suggestion.tag}">`);
       }
+    });
+    
+    // Also search for tags by their values (e.g., typing "swamp" should find "biome:swamp")
+    const commonTags = [
+      'biome:forest', 'biome:desert', 'biome:mountain', 'biome:swamp', 'biome:grassland',
+      'terrain:dense', 'terrain:sparse', 'terrain:rocky', 'terrain:smooth',
+      'climate:temperate', 'climate:arctic', 'climate:tropical', 'climate:arid',
+      'settlement:village', 'settlement:town', 'settlement:city',
+      'travel_speed:0.5', 'travel_speed:0.75', 'travel_speed:1.0', 'travel_speed:1.25', 'travel_speed:1.5',
+      'resources:timber', 'resources:game', 'resources:minerals', 'resources:freshwater',
+      'elevation:lowland', 'elevation:highland', 'elevation:mountain',
+      'custom:haunted', 'custom:magical', 'custom:dangerous'
+    ];
+    
+    const partialLower = partial.toLowerCase();
+    
+    // Find tags where the value portion matches the partial input
+    const valueMatches = commonTags.filter(tag => {
+      const colonIndex = tag.indexOf(':');
+      if (colonIndex === -1) return false;
+      
+      const tagValue = tag.substring(colonIndex + 1).toLowerCase();
+      return tagValue.includes(partialLower) && !existingTags.includes(tag);
+    });
+    
+    // Add value matches to suggestions
+    valueMatches.forEach(tag => {
+      datalist.append(`<option value="${tag}">`);
     });
   }
 }
