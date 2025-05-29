@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Discord Community
+    url: https://discord.gg/foundryvtt
+    about: Ask questions and discuss with the community on the Foundry VTT Discord
+  - name: Documentation
+    url: https://docs.rayners.dev/journeys-and-jamborees
+    about: Check the documentation for guides and FAQs
+  - name: Foundry VTT Compatibility
+    url: https://foundryvtt.com/article/compatibility/
+    about: Check Foundry's compatibility guide for version-related issues
