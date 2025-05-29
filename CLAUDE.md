@@ -89,10 +89,10 @@ flags['realms-and-reaches']: {
 
 **Tag Namespace Conventions**:
 
-- **Core namespaces**: `biome:*`, `terrain:*`, `climate:*`, `travel_speed:*`, `resources:*`, `elevation:*`
+- **Core namespaces**: `biome:*`, `terrain:*`, `climate:*`, `travel_speed:*`, `resources:*`, `elevation:*`, `settlement:*`
 - **Extensible namespaces**: `custom:*`, `module:*` (allows multiple values)
 - **Single-value enforcement**: biome, climate, travel_speed, elevation (automatic replacement)
-- **Multi-value support**: resources, custom, module (additive)
+- **Multi-value support**: resources, custom, module, settlement (additive)
 
 **Validation Rules**:
 
@@ -101,11 +101,20 @@ flags['realms-and-reaches']: {
 - Special handling: module tags allow multiple colons (`module:jj:encounter_chance:0.3`)
 - Namespace validation: travel_speed must be 0.1-2.0, etc.
 
+**Tag Search Enhancement (COMPLETED ✅)**:
+
+- **Value-based search**: Type "swamp" to find "biome:swamp"
+- **Partial matching**: Case-insensitive, substring-based matching
+- **Combined suggestions**: Works alongside existing full-tag suggestions
+- **Settlement namespace**: Added settlement:village, settlement:town, settlement:city
+- **User experience**: Dramatically improved tag discoverability in realm editor
+
 **Performance Targets (ACHIEVED)**:
 
 - Spatial queries: < 1ms for typical scenes
 - Point-in-polygon: Efficient ray-casting algorithm
 - Memory usage: < 1MB for typical datasets
+- Tag search: Real-time autocomplete with no performance impact
 
 ### Canvas Layer Implementation (COMPLETED ✅)
 
@@ -310,6 +319,8 @@ flags['realms-and-reaches']: {
 - **FOU-69**: ✅ Export/import functionality (COMPLETED - Updated for Region documents)
 - **FOU-70**: ✅ Module API design (COMPLETED - Updated for Region documents)
 - **FOU-71**: 📋 J&J integration (READY)
+- **Tag Search Enhancement**: ✅ Value-based tag search (COMPLETED - v1.1)
+- **Settlement Namespace**: ✅ Added settlement tags (COMPLETED - v1.1)
 - **Documentation**: ✅ Complete user and developer documentation (COMPLETED)
 
 ### Labels and Organization

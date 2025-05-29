@@ -212,7 +212,27 @@ All tags must follow the `key:value` pattern:
 #### Validation Feedback
 - **Green border**: Valid tag format
 - **Red border**: Invalid format with tooltip explanation
-- **Autocomplete**: Suggests valid completions as you type
+- **Smart Autocomplete**: Advanced tag discovery system
+
+#### Smart Tag Search
+The autocomplete system now supports multiple search methods:
+
+**Full Tag Search**:
+- Type `biome:` to see all biome options
+- Type `travel_` to find travel-related tags
+- Standard prefix matching for complete tag names
+
+**Value-Based Search** ✨ *New Feature*:
+- Type `swamp` → finds `biome:swamp`
+- Type `village` → finds `settlement:village`
+- Type `magical` → finds `custom:magical`
+- Type `timber` → finds `resources:timber`
+
+**Smart Features**:
+- **Case-insensitive**: Works regardless of capitalization
+- **Partial matching**: Type part of a value to find matches
+- **Combined results**: Shows both full-tag and value matches
+- **Duplicate filtering**: Hides already-applied tags
 
 ### Core Tag Namespaces
 
@@ -275,6 +295,15 @@ Altitude and topographic categories:
 - `elevation:valley` - Below surrounding terrain
 - `elevation:plateau` - Elevated flat areas
 - `elevation:peak` - Highest points
+
+#### Settlement Tags (`settlement:`)
+Human habitation and civilized areas (can have multiple):
+- `settlement:village` - Small rural communities (50-300 people)
+- `settlement:town` - Larger communities with markets (300-2000 people)
+- `settlement:city` - Major urban centers (2000+ people)
+- `settlement:outpost` - Frontier settlements and trading posts
+- `settlement:ruins` - Abandoned or destroyed settlements
+- `settlement:nomad` - Temporary or seasonal encampments
 
 #### Custom Tags (`custom:`)
 User-defined properties for unique features:

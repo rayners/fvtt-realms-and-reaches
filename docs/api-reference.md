@@ -206,14 +206,37 @@ const isValid = TagSystem.validateTag('biome:forest');
 
 #### Suggestions
 
+The TagSystem provides intelligent tag suggestions with multiple search strategies:
+
 ```typescript
-// Get suggestions for partial input
+// Get suggestions for partial input (prefix matching)
 const suggestions = tagSystem.getSuggestions('bio', existingTags);
 
 // Get namespace suggestions
 const biomeValues = TagSystem.getSuggestions('biome');
 // Returns: ['forest', 'desert', 'mountain', 'swamp', ...]
 ```
+
+#### Value-Based Search (v1.1+)
+
+The module now supports searching tags by their values:
+
+```typescript
+// Search by value - finds tags containing the value
+// This is built into the UI autocomplete automatically
+// Type "swamp" → suggests "biome:swamp"
+// Type "village" → suggests "settlement:village"
+// Type "magical" → suggests "custom:magical"
+
+// For custom implementations, check the updateRealmTagSuggestions
+// function in module.ts for the search algorithm
+```
+
+**Search Features**:
+- **Case-insensitive matching**: "SWAMP" finds "biome:swamp"
+- **Partial value matching**: "swa" finds "biome:swamp"
+- **Duplicate filtering**: Already applied tags are excluded
+- **Combined results**: Shows both prefix and value matches
 
 ## Public API
 
@@ -275,7 +298,7 @@ getManager(): RealmManager
 
 ### Core Namespaces
 
-The tag system defines 8 core namespaces:
+The tag system defines 9 core namespaces:
 
 | Namespace | Description | Examples | Values |
 |-----------|-------------|----------|---------|
@@ -285,6 +308,7 @@ The tag system defines 8 core namespaces:
 | `travel_speed` | Speed modifier | `travel_speed:0.75` | 0.1-2.0 (decimal values) |
 | `resources` | Available materials | `resources:timber` | timber, game, minerals, water, herbs, food |
 | `elevation` | Altitude category | `elevation:highland` | lowland, highland, mountain, valley, plateau, peak |
+| `settlement` | Human habitation | `settlement:village` | village, town, city, outpost, ruins, nomad |
 | `custom` | User-defined | `custom:haunted` | Any custom values |
 | `module` | Module-specific | `module:jj:encounter_chance:0.3` | Module-defined format |
 
