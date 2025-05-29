@@ -183,7 +183,7 @@ const encounterTable = `encounters-${biome}`;
 ### Current Status: Alpha Release
 - **Version**: 0.1.0
 - **Status**: ✅ Feature complete for MVP
-- **Compatibility**: Foundry VTT v11+
+- **Compatibility**: Foundry VTT v13+
 - **Stability**: Ready for testing and feedback
 
 ### What's Included

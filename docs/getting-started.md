@@ -14,7 +14,7 @@ This guide will walk you through setting up Realms & Reaches and creating your f
 
 ## Prerequisites
 
-- Foundry VTT v11 or later
+- Foundry VTT v13 or later
 - GM permissions in your world
 - A scene to work with (any size)
 
@@ -317,7 +317,7 @@ Yes! This is a feature:
 1. **Check module is enabled** in world settings
 2. **Refresh your browser** after enabling
 3. **Check console for errors** (F12 → Console tab)
-4. **Verify Foundry VTT version** (v11+ required)
+4. **Verify Foundry VTT version** (v13+ required)
 
 ### Performance Issues
 

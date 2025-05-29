@@ -301,7 +301,7 @@ if (realmsAPI) {
 
 ### Browser Support
 
-- **Foundry VTT v11+**: Full compatibility
+- **Foundry VTT v13+**: Full compatibility
 - **Modern browsers**: Chrome, Firefox, Safari, Edge
 - **Hardware acceleration**: Recommended for large datasets
 
