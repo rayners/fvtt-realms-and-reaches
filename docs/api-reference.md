@@ -735,6 +735,15 @@ for (let i = 0; i < 1000; i++) {
 }
 ```
 
+## Support
+
+Consider supporting continued development:
+
+- **[GitHub Sponsors](https://github.com/sponsors/rayners)** - Support ongoing development
+- **[Patreon](https://patreon.com/rayners)** - Monthly support for continued development
+
+Your support helps fund ongoing development and is greatly appreciated! ❤️
+
 ---
 
 For more examples and advanced usage, see the [User Guide](../README.md) and [Contributing Guidelines](../CONTRIBUTING.md).

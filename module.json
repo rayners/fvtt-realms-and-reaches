@@ -24,6 +24,16 @@
       "path": "languages/en.json"
     }
   ],
+  "funding": [
+    {
+      "type": "patreon", 
+      "url": "https://patreon.com/rayners"
+    },
+    {
+      "type": "github",
+      "url": "https://github.com/sponsors/rayners"
+    }
+  ],
   "relationships": {
     "recommends": [
       {

@@ -243,6 +243,15 @@ const encounterTable = `encounters-${biome}`;
 - Console error messages (if any)
 - Screenshots (for visual issues)
 
+## Support
+
+Consider supporting continued development:
+
+- **[GitHub Sponsors](https://github.com/sponsors/rayners)** - Support ongoing development
+- **[Patreon](https://patreon.com/rayners)** - Monthly support for continued development
+
+Your support helps fund ongoing development and is greatly appreciated! ❤️
+
 ---
 
 **Welcome to Realms & Reaches!** 🗺️

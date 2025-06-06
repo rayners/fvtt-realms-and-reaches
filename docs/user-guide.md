@@ -696,6 +696,15 @@ Include this information:
 - **Error messages** from browser console
 - **Screenshot** if visual issue
 
+## Support
+
+Consider supporting continued development:
+
+- **[GitHub Sponsors](https://github.com/sponsors/rayners)** - Support ongoing development
+- **[Patreon](https://patreon.com/rayners)** - Monthly support for continued development
+
+Your support helps fund ongoing development and is greatly appreciated! ❤️
+
 ---
 
 This guide covers the complete feature set of Realms & Reaches. For the latest updates and community-contributed content, check the [GitHub repository](https://github.com/rayners/fvtt-realms-and-reaches) and join the community discussions.

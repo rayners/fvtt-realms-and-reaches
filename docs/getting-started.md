@@ -354,6 +354,15 @@ If you encounter bugs:
 3. **Include your Foundry version** and browser info
 4. **Attach error messages** from the console if possible
 
+## Support
+
+Consider supporting continued development:
+
+- **[GitHub Sponsors](https://github.com/sponsors/rayners)** - Support ongoing development
+- **[Patreon](https://patreon.com/rayners)** - Monthly support for continued development
+
+Your support helps fund ongoing development and is greatly appreciated! ❤️
+
 ---
 
 **Congratulations!** You now know the basics of Realms & Reaches. Start small, experiment with different tag combinations, and build up your world's environmental data over time. The system is designed to grow with your campaign and adapt to your unique storytelling needs.
