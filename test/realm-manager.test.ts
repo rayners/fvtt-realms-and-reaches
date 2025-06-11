@@ -9,7 +9,7 @@ import { RealmData } from '../src/realm-data';
 // Mock scene for testing
 const mockRegions = new Map();
 // Add filter method to regions map to match Foundry's Collection interface
-(mockRegions as any).filter = function(callback: (region: any) => boolean) {
+(mockRegions as any).filter = function (callback: (region: any) => boolean) {
   const results: any[] = [];
   for (const [id, region] of this.entries()) {
     if (callback(region)) {

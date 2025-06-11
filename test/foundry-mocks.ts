@@ -1,9 +1,9 @@
 /**
  * Comprehensive Foundry VTT Mock Setup
- * 
+ *
  * This file provides a complete mock environment for Foundry VTT testing.
  * It can be shared between multiple projects that need Foundry mocks.
- * 
+ *
  * Usage:
  * ```typescript
  * import './foundry-mocks';
@@ -104,9 +104,9 @@ export interface MockFolder {
 
 export function createMockScene(options: Partial<MockScene> = {}): MockScene {
   const regions = options.regions || new Map();
-  
+
   // Add filter method to regions map to match Foundry's Collection interface
-  (regions as any).filter = function(callback: (region: any) => boolean) {
+  (regions as any).filter = function (callback: (region: any) => boolean) {
     const results: any[] = [];
     for (const [id, region] of this.entries()) {
       if (callback(region)) {
@@ -115,7 +115,7 @@ export function createMockScene(options: Partial<MockScene> = {}): MockScene {
     }
     return results;
   };
-  
+
   return {
     id: options.id || 'test-scene',
     name: options.name || 'Test Scene',
@@ -213,7 +213,7 @@ export class MockActorClass {
   static async create(data: any): Promise<MockActor> {
     return createMockActor(data);
   }
-  
+
   static async createDocuments(data: any[]): Promise<MockActor[]> {
     return data.map(d => createMockActor(d));
   }
@@ -223,7 +223,7 @@ export class MockRollTableClass {
   static async create(data: any): Promise<MockRollTable> {
     return createMockRollTable(data);
   }
-  
+
   static async createDocuments(data: any[]): Promise<MockRollTable[]> {
     return data.map(d => createMockRollTable(d));
   }
@@ -233,7 +233,7 @@ export class MockFolderClass {
   static async create(data: any): Promise<MockFolder> {
     return createMockFolder(data);
   }
-  
+
   static async createDocuments(data: any[]): Promise<MockFolder[]> {
     return data.map(d => createMockFolder(d));
   }
@@ -243,21 +243,21 @@ export class MockDialogClass {
   constructor(options: any = {}) {
     this.options = options;
   }
-  
+
   options: any;
-  
+
   static async confirm(options: any = {}): Promise<boolean> {
     return options.defaultYes !== false;
   }
-  
+
   static async prompt(options: any = {}): Promise<any> {
     return options.defaultValue || null;
   }
-  
+
   render(force?: boolean): void {
     // Mock render
   }
-  
+
   close(): void {
     // Mock close
   }
@@ -469,24 +469,26 @@ export function setupFoundryDocuments() {
       this.formula = formula;
       this.total = 10; // Default total
     }
-    
+
     formula: string;
     total: number;
-    
+
     async evaluate() {
       return this;
     }
   };
 }
 
-export function setupFoundryGame(options: {
-  systemId?: string;
-  user?: Partial<MockUser>;
-  scenes?: MockScene[];
-} = {}) {
+export function setupFoundryGame(
+  options: {
+    systemId?: string;
+    user?: Partial<MockUser>;
+    scenes?: MockScene[];
+  } = {}
+) {
   const mockUser = createMockUser(options.user);
   const mockScenes = options.scenes || [createMockScene()];
-  
+
   globalThis.game = {
     user: mockUser,
     userId: mockUser.id,
@@ -530,7 +532,7 @@ export function setupFoundryUI() {
 
 export function setupFoundryCanvas(scene?: MockScene) {
   const mockScene = scene || createMockScene();
-  
+
   globalThis.canvas = {
     scene: mockScene,
     regions: {
@@ -582,19 +584,21 @@ export function setupFoundryConfig() {
 /**
  * Set up a complete Foundry VTT mock environment
  */
-export function setupFoundryMocks(options: {
-  systemId?: string;
-  user?: Partial<MockUser>;
-  scenes?: MockScene[];
-  includeCanvas?: boolean;
-  includeRegions?: boolean;
-} = {}) {
+export function setupFoundryMocks(
+  options: {
+    systemId?: string;
+    user?: Partial<MockUser>;
+    scenes?: MockScene[];
+    includeCanvas?: boolean;
+    includeRegions?: boolean;
+  } = {}
+) {
   setupFoundryGlobals();
   setupFoundryDocuments();
   setupFoundryGame(options);
   setupFoundryUI();
   setupFoundryConfig();
-  
+
   if (options.includeCanvas !== false) {
     setupFoundryCanvas(options.scenes?.[0]);
   }

@@ -1,6 +1,6 @@
 /**
  * Test setup for Realms & Reaches
- * 
+ *
  * Uses the shared foundry-mocks.ts for comprehensive Foundry VTT mocking.
  */
 

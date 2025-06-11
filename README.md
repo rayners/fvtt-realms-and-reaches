@@ -35,7 +35,7 @@ A Foundry VTT module that provides a queryable biome and terrain layer for narra
 - ✅ **Tag-based realm data** with 9 core namespaces (biome, terrain, climate, settlement, etc.)
 - ✅ **Spatial queries** - Fast point-in-polygon detection for coordinate-based lookups
 - ✅ **Data persistence** - Automatic saving to scene flags with export/import
-- ✅ **Smart tag search** - Value-based autocomplete (type "swamp" → finds "biome:swamp") ✨ *New*
+- ✅ **Smart tag search** - Value-based autocomplete (type "swamp" → finds "biome:swamp") ✨ _New_
 - ✅ **Validation system** - Intelligent tag suggestions and conflict detection
 - ✅ **API foundation** - Full CRUD operations for programmatic access
 - ✅ **Canvas drawing layer** - Visual realm creation with polygon, rectangle, and circle tools
@@ -129,7 +129,7 @@ Double-click any realm or use the Properties button to open the editor:
 #### Tag Editor
 
 - **Add Tags**: Type in the format `key:value` (e.g., `biome:forest`)
-- **Smart Autocomplete**: Multiple search methods ✨ *Enhanced*
+- **Smart Autocomplete**: Multiple search methods ✨ _Enhanced_
   - Type `biome:` to see all biome options
   - Type `swamp` to find `biome:swamp`
   - Type `village` to find `settlement:village`
