@@ -1,4 +1,4 @@
-name: Test Module
+name: CI
 
 on:
   push:
@@ -9,7 +9,6 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    
     strategy:
       matrix:
         node-version: [18, 20]
@@ -18,8 +17,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Run tests for Node.js ${{ matrix.node-version }}
-        uses: rayners/foundry-module-actions/test@v1
+      - name: Run CI Pipeline
+        uses: rayners/foundry-module-actions/ci@v3
         with:
           node-version: ${{ matrix.node-version }}
-          coverage: ${{ matrix.node-version == '18' }} # Only generate coverage for Node 18
+          github-packages: false
+          codecov: true
+          codecov-slug: rayners/fvtt-realms-and-reaches
+          coverage-node-version: '18'
+          codecov-token: ${{ secrets.CODECOV_TOKEN }}
