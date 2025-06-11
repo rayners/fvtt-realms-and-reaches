@@ -30,8 +30,13 @@
     "@ethaks/fvtt-quench": "^0.10.0",
     "@rayners/foundry-dev-tools": "^1.2.0",
     "@types/jquery": "^3.5.30",
+    "eslint": "^9.28.0",
     "jsdom": "^26.1.0",
+    "prettier": "^3.5.3",
+    "rollup": "^4.42.0",
     "sass": "^1.62.0",
-    "tslib": "^2.5.0"
+    "tslib": "^2.5.0",
+    "typescript": "^5.8.3",
+    "vitest": "^3.2.3"
   }
 }
