@@ -28,7 +28,7 @@
   "license": "MIT",
   "devDependencies": {
     "@ethaks/fvtt-quench": "^0.10.0",
-    "@rayners/foundry-dev-tools": "file:../foundry-dev-tools",
+    "@rayners/foundry-dev-tools": "^1.2.0",
     "@types/jquery": "^3.5.30",
     "jsdom": "^26.1.0",
     "sass": "^1.62.0",
