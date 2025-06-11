@@ -1,19 +1,6 @@
 {
+  "extends": "@rayners/foundry-dev-tools/configs/tsconfig.base.json",
   "compilerOptions": {
-    "target": "ES2020",
-    "module": "ESNext",
-    "moduleResolution": "node",
-    "esModuleInterop": true,
-    "resolveJsonModule": true,
-    "strict": true,
-    "sourceMap": true,
-    "declaration": false,
-    "noImplicitAny": false,
-    "strictNullChecks": true,
-    "outDir": "./dist",
-    "baseUrl": ".",
-    "types": ["fvtt-types"]
-  },
-  "include": ["src/**/*", "src/types/**/*.d.ts"],
-  "exclude": ["node_modules"]
+    "types": ["@rayners/foundry-dev-tools/types/foundry-v13-essentials", "@types/jquery"]
+  }
 }
