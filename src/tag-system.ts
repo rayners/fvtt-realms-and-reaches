@@ -229,11 +229,14 @@ export class TagSystem {
     }
 
     const value = valueParts.join(':');
-    const validValuePattern = /^[a-zA-Z0-9_.-]+$/;
+    // For module tags, allow colons in the value. For other tags, don't allow colons.
+    const validValuePattern = prefix === 'module' 
+      ? /^[a-zA-Z0-9_.:/-]+$/  // Allow colons for module tags
+      : /^[a-zA-Z0-9_.-]+$/;   // No colons for other tags
     if (!validValuePattern.test(value)) {
       return {
         valid: false,
-        error: 'Tag value can only contain letters, numbers, underscores, periods, and hyphens'
+        error: `Tag value can only contain letters, numbers, underscores, periods, hyphens${prefix === 'module' ? ', colons, and forward slashes' : ''}`
       };
     }
 
@@ -278,9 +281,12 @@ export class TagSystem {
         }
       }
     } else {
-      // Suggesting namespace prefixes
+      // Suggesting namespace prefixes and matching tag values
       for (const [prefix, namespace] of Object.entries(TAG_NAMESPACES)) {
-        if (prefix.toLowerCase().includes(partialLower)) {
+        // Check if namespace prefix matches
+        const prefixMatches = prefix.toLowerCase().includes(partialLower);
+        
+        if (prefixMatches) {
           // Don't suggest if this namespace already has a tag (except resources and custom)
           if (existingKeys.has(prefix) && !['resources', 'custom', 'module'].includes(prefix)) {
             continue;
@@ -293,6 +299,46 @@ export class TagSystem {
               namespace: namespace.name,
               score: this.calculateRelevanceScore(prefix, partialLower)
             });
+          }
+        }
+        
+        // Also check if any tag values/examples match the input
+        if (namespace.examples) {
+          for (const example of namespace.examples) {
+            const [, exampleValue] = example.split(':', 2);
+            if (exampleValue && exampleValue.toLowerCase().includes(partialLower)) {
+              // Don't suggest if this namespace already has a tag (except resources and custom)
+              if (existingKeys.has(prefix) && !['resources', 'custom', 'module'].includes(prefix)) {
+                continue;
+              }
+              
+              suggestions.push({
+                tag: example,
+                description: `${namespace.name}: ${exampleValue}`,
+                namespace: namespace.name,
+                score: this.calculateRelevanceScore(exampleValue, partialLower)
+              });
+            }
+          }
+        }
+        
+        // Check suggestions array if it exists
+        if (namespace.suggestions) {
+          for (const suggestion of namespace.suggestions) {
+            if (suggestion.toLowerCase().includes(partialLower)) {
+              // Don't suggest if this namespace already has a tag (except resources and custom)
+              if (existingKeys.has(prefix) && !['resources', 'custom', 'module'].includes(prefix)) {
+                continue;
+              }
+              
+              const fullTag = `${prefix}:${suggestion}`;
+              suggestions.push({
+                tag: fullTag,
+                description: `${namespace.name}: ${suggestion}`,
+                namespace: namespace.name,
+                score: this.calculateRelevanceScore(suggestion, partialLower)
+              });
+            }
           }
         }
       }

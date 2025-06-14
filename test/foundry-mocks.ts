@@ -263,6 +263,35 @@ export class MockDialogClass {
   }
 }
 
+export class MockDialogV2Class {
+  constructor(options: any = {}) {
+    this.options = options;
+  }
+
+  options: any;
+
+  static async confirm(options: any = {}): Promise<boolean> {
+    return options.defaultYes !== false;
+  }
+
+  static async prompt(options: any = {}): Promise<any> {
+    return options.callback ? options.callback() : null;
+  }
+
+  static async input(options: any = {}): Promise<string | null> {
+    return options.ok?.callback ? options.ok.callback() : 'mock-input';
+  }
+
+  async render(options: any = {}): Promise<this> {
+    // Mock render
+    return this;
+  }
+
+  async close(): Promise<void> {
+    // Mock close
+  }
+}
+
 // ============================================================================
 // FOUNDRY GLOBALS SETUP
 // ============================================================================

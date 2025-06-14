@@ -1,4 +1,4 @@
-import { createFoundryConfigWithDir } from '@rayners/foundry-dev-tools/rollup/foundry-config.js';
+import { createFoundryConfigWithDir } from '@rayners/foundry-dev-tools/rollup';
 
 export default createFoundryConfigWithDir({
   cssFileName: 'styles/realms-and-reaches.css',

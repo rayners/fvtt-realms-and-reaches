@@ -20,7 +20,6 @@ declare global {
 
 import { registerSettings } from './settings';
 import { RealmManager } from './realm-manager';
-import { RealmPropertiesDialog } from './realm-properties-dialog';
 import * as API from './api';
 import { TagSystem } from './tag-system';
 
@@ -45,7 +44,6 @@ Hooks.once('init', async () => {
   const moduleAPI = {
     ...API,
     RealmManager,
-    RealmPropertiesDialog,
     TagSystem
   };
   (game.modules.get('realms-and-reaches') as any).api = moduleAPI;
@@ -426,7 +424,7 @@ function createRealmTool(toolType: 'polygon' | 'rectangle' | 'circle') {
       // Open realm properties for the created realm
       if (documentType === 'Region' && result.length > 0) {
         setTimeout(() => {
-          RealmPropertiesDialog.open(result[0]);
+          result[0].sheet.render(true);
         }, 100);
       }
 
@@ -563,7 +561,7 @@ async function createDefaultRealm(name: string) {
 
     if (regions.length > 0) {
       setTimeout(() => {
-        RealmPropertiesDialog.open(regions[0]);
+        regions[0].sheet.render(true);
       }, 100);
       ui.notifications?.info(
         'Realm created! Adjust the shape and add tags in the properties dialog.'
@@ -633,7 +631,7 @@ Hooks.on('getRegionContextOptions', (html: JQuery, options: any[]) => {
       const regionId = li.data('document-id');
       const region = canvas?.scene?.regions.get(regionId);
       if (region && region.flags?.['realms-and-reaches']?.isRealm) {
-        RealmPropertiesDialog.open(region as any);
+        region.sheet.render(true);
       }
     }
   });

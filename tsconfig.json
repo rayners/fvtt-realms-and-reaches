@@ -1,6 +1,17 @@
 {
-  "extends": "@rayners/foundry-dev-tools/configs/tsconfig.base.json",
   "compilerOptions": {
-    "types": ["@rayners/foundry-dev-tools/types/foundry-v13-essentials", "@types/jquery"]
-  }
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "node",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "declaration": true,
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "types": ["@types/jquery"]
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist", "test/**/*"]
 }

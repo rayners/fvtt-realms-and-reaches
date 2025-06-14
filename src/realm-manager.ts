@@ -5,6 +5,56 @@
  * for the realm system. Uses Region documents with type "realm".
  */
 
+import { RealmGeometry } from './realm-data';
+
+/**
+ * Wrapper class to make RegionDocument behave like RealmData for compatibility
+ */
+class RealmDataCompat {
+  constructor(private region: RealmRegion) {}
+  
+  get id(): string {
+    return this.region.id;
+  }
+  
+  get name(): string {
+    return this.region.name;
+  }
+  
+  get metadata() {
+    return this.region.flags['realms-and-reaches']?.metadata || {
+      created: new Date().toISOString(),
+      modified: new Date().toISOString(),
+      author: 'Unknown'
+    };
+  }
+  
+  getTag(key: string): string | null {
+    return RealmHelpers.getTag(this.region, key);
+  }
+  
+  getTags(): string[] {
+    return RealmHelpers.getTags(this.region);
+  }
+  
+  hasTag(tag: string): boolean {
+    return RealmHelpers.hasTag(this.region, tag);
+  }
+  
+  containsPoint(x: number, y: number): boolean {
+    return RealmHelpers.containsPoint(this.region, x, y);
+  }
+  
+  getBounds() {
+    return RealmHelpers.getBounds(this.region);
+  }
+  
+  // Expose the underlying region for direct access
+  get _region(): RealmRegion {
+    return this.region;
+  }
+}
+
 // RealmData is now replaced by Region documents with realm flag
 // Custom data is stored in flags["realms-and-reaches"]
 type RealmRegion = RegionDocument & {
@@ -19,6 +69,8 @@ type RealmRegion = RegionDocument & {
       };
     };
   };
+  // Add bounds property to match expected interface
+  bounds?: { x: number; y: number; width: number; height: number };
 };
 
 // SceneRealmData is no longer needed - data is stored in Region documents
@@ -78,6 +130,41 @@ class RealmHelpers {
   }
 
   /**
+   * Convert geometry to Region shapes format
+   */
+  static convertGeometryToShapes(geometry: RealmGeometry): any[] {
+    switch (geometry.type) {
+      case 'circle':
+        return [{
+          type: 'ellipse',
+          x: geometry.x || 0,
+          y: geometry.y || 0,
+          radiusX: geometry.radius || 0,
+          radiusY: geometry.radius || 0
+        }];
+      case 'rectangle':
+        return [{
+          type: 'rectangle',
+          x: (geometry.x || 0) - (geometry.width || 0) / 2,
+          y: (geometry.y || 0) - (geometry.height || 0) / 2,
+          width: geometry.width || 0,
+          height: geometry.height || 0,
+          rotation: geometry.rotation || 0
+        }];
+      case 'polygon':
+        if (!geometry.points || geometry.points.length < 6) {
+          return [];
+        }
+        return [{
+          type: 'polygon',
+          points: geometry.points
+        }];
+      default:
+        return [];
+    }
+  }
+
+  /**
    * Check if a point is inside a realm region
    */
   static containsPoint(region: RealmRegion, x: number, y: number): boolean {
@@ -89,13 +176,53 @@ class RealmHelpers {
    * Get the bounding box of a realm region
    */
   static getBounds(region: RealmRegion): { x: number; y: number; width: number; height: number } {
-    // Use Foundry's built-in Region bounds
-    const bounds = region.bounds;
+    // Use Foundry's built-in Region bounds if available
+    if (region.bounds) {
+      return {
+        x: region.bounds.x,
+        y: region.bounds.y,
+        width: region.bounds.width,
+        height: region.bounds.height
+      };
+    }
+    
+    // Fallback: calculate bounds from shapes if bounds not available
+    if (!region.shapes || region.shapes.length === 0) {
+      return { x: 0, y: 0, width: 0, height: 0 };
+    }
+    
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    
+    for (const shape of region.shapes) {
+      switch (shape.type) {
+        case 'rectangle':
+          minX = Math.min(minX, shape.x);
+          minY = Math.min(minY, shape.y);
+          maxX = Math.max(maxX, shape.x + shape.width);
+          maxY = Math.max(maxY, shape.y + shape.height);
+          break;
+        case 'ellipse':
+          minX = Math.min(minX, shape.x - shape.radiusX);
+          minY = Math.min(minY, shape.y - shape.radiusY);
+          maxX = Math.max(maxX, shape.x + shape.radiusX);
+          maxY = Math.max(maxY, shape.y + shape.radiusY);
+          break;
+        case 'polygon':
+          for (let i = 0; i < shape.points.length; i += 2) {
+            minX = Math.min(minX, shape.points[i]);
+            maxX = Math.max(maxX, shape.points[i]);
+            minY = Math.min(minY, shape.points[i + 1]);
+            maxY = Math.max(maxY, shape.points[i + 1]);
+          }
+          break;
+      }
+    }
+    
     return {
-      x: bounds.x,
-      y: bounds.y,
-      width: bounds.width,
-      height: bounds.height
+      x: minX,
+      y: minY,
+      width: maxX - minX,
+      height: maxY - minY
     };
   }
 
@@ -153,19 +280,28 @@ export class RealmManager extends EventTarget {
   async createRealm(realmData: {
     name?: string;
     shapes?: any[];
+    geometry?: RealmGeometry;
     tags?: string[];
     color?: string;
-  }): Promise<RealmRegion> {
+    id?: string;
+  } | any): Promise<RealmDataCompat> {
     const scene = game.scenes?.get(this.sceneId);
     if (!scene) {
       throw new Error(`Scene ${this.sceneId} not found`);
     }
 
+    // Convert geometry to shapes if provided
+    let shapes = realmData.shapes;
+    if (!shapes && realmData.geometry) {
+      shapes = RealmHelpers.convertGeometryToShapes(realmData.geometry);
+    }
+    
     // Create Region document with realm flag
     const regionData = {
+      _id: realmData.id,
       name: realmData.name || 'New Realm',
       color: realmData.color || '#ff0000',
-      shapes: realmData.shapes || [],
+      shapes: shapes || [],
       flags: {
         'realms-and-reaches': {
           isRealm: true,
@@ -189,7 +325,7 @@ export class RealmManager extends EventTarget {
       })
     );
 
-    return createdRealm;
+    return new RealmDataCompat(createdRealm);
   }
 
   /**
@@ -197,13 +333,19 @@ export class RealmManager extends EventTarget {
    */
   async updateRealm(
     realm: RealmRegion,
-    updates: {
+    updates?: {
       name?: string;
       shapes?: any[];
       tags?: string[];
       color?: string;
     }
   ): Promise<void> {
+    // If no updates provided, just touch the metadata
+    if (!updates) {
+      await RealmHelpers.touch(realm);
+      return;
+    }
+    
     // Update modified timestamp
     await RealmHelpers.touch(realm);
 
@@ -217,7 +359,9 @@ export class RealmManager extends EventTarget {
       updateData['flags.realms-and-reaches.tags'] = updates.tags;
     }
 
-    await realm.update(updateData);
+    if (Object.keys(updateData).length > 0) {
+      await realm.update(updateData);
+    }
 
     // Dispatch event
     this.dispatchEvent(
@@ -235,7 +379,7 @@ export class RealmManager extends EventTarget {
     if (!realm) return false;
 
     // Delete the region document
-    await realm.delete();
+    await realm._region.delete();
 
     // Dispatch event
     this.dispatchEvent(
@@ -252,18 +396,21 @@ export class RealmManager extends EventTarget {
   /**
    * Get a realm by ID
    */
-  getRealm(realmId: string): RealmRegion | null {
+  getRealm(realmId: string): RealmDataCompat | null {
     const scene = game.scenes?.get(this.sceneId);
     if (!scene) return null;
 
     const region = scene.regions.get(realmId) as RealmRegion;
-    return region && region.type === 'realm' ? region : null;
+    if (region && region.flags?.['realms-and-reaches']?.isRealm === true) {
+      return new RealmDataCompat(region);
+    }
+    return null;
   }
 
   /**
    * Get the first realm at a specific point
    */
-  getRealmAt(x: number, y: number): RealmRegion | null {
+  getRealmAt(x: number, y: number): RealmDataCompat | null {
     const realms = this.getRealmsAt(x, y);
     return realms[0] || null;
   }
@@ -271,18 +418,18 @@ export class RealmManager extends EventTarget {
   /**
    * Get all realms at a specific point
    */
-  getRealmsAt(x: number, y: number): RealmRegion[] {
+  getRealmsAt(x: number, y: number): RealmDataCompat[] {
     const scene = game.scenes?.get(this.sceneId);
     if (!scene) return [];
 
-    const results: RealmRegion[] = [];
+    const results: RealmDataCompat[] = [];
 
     for (const region of scene.regions) {
-      if (
-        region.flags?.['realms-and-reaches']?.isRealm === true &&
-        RealmHelpers.containsPoint(region as RealmRegion, x, y)
-      ) {
-        results.push(region as RealmRegion);
+      if (region.flags?.['realms-and-reaches']?.isRealm === true) {
+        const contains = RealmHelpers.containsPoint(region as RealmRegion, x, y);
+        if (contains) {
+          results.push(new RealmDataCompat(region as RealmRegion));
+        }
       }
     }
 
@@ -292,32 +439,32 @@ export class RealmManager extends EventTarget {
   /**
    * Get all realms
    */
-  getAllRealms(): RealmRegion[] {
+  getAllRealms(): RealmDataCompat[] {
     const scene = game.scenes?.get(this.sceneId);
     if (!scene) return [];
 
     return scene.regions.filter(
       region => region.flags?.['realms-and-reaches']?.isRealm === true
-    ) as RealmRegion[];
+    ).map(region => new RealmDataCompat(region as RealmRegion));
   }
 
   /**
    * Find realms matching specific criteria
    */
-  findRealms(options: RealmQueryOptions): RealmRegion[] {
+  findRealms(options: RealmQueryOptions): RealmDataCompat[] {
     let results = this.getAllRealms();
 
     // Filter by tags
     if (options.tags && options.tags.length > 0) {
       results = results.filter(realm => {
-        return options.tags!.every(tag => RealmHelpers.hasTag(realm, tag));
+        return options.tags!.every(tag => realm.hasTag(tag));
       });
     }
 
     // Filter by bounds
     if (options.bounds) {
       results = results.filter(realm => {
-        const realmBounds = RealmHelpers.getBounds(realm);
+        const realmBounds = realm.getBounds();
         return this.boundsIntersect(options.bounds!, realmBounds);
       });
     }
@@ -348,16 +495,16 @@ export class RealmManager extends EventTarget {
   /**
    * Find realms by tag
    */
-  findRealmsByTag(tag: string): RealmRegion[] {
-    return this.getAllRealms().filter(realm => RealmHelpers.hasTag(realm, tag));
+  findRealmsByTag(tag: string): RealmDataCompat[] {
+    return this.getAllRealms().filter(realm => realm.hasTag(tag));
   }
 
   /**
    * Find realms by multiple tags (all must match)
    */
-  findRealmsByTags(tags: string[]): RealmRegion[] {
+  findRealmsByTags(tags: string[]): RealmDataCompat[] {
     return this.getAllRealms().filter(realm => {
-      return tags.every(tag => RealmHelpers.hasTag(realm, tag));
+      return tags.every(tag => realm.hasTag(tag));
     });
   }
 
@@ -408,10 +555,10 @@ export class RealmManager extends EventTarget {
       realms: realms.map(realm => ({
         id: realm.id,
         name: realm.name,
-        color: realm.color,
-        shapes: realm.shapes,
-        tags: RealmHelpers.getTags(realm),
-        metadata: realm.flags['realms-and-reaches']?.metadata
+        color: realm._region.color,
+        shapes: realm._region.shapes,
+        tags: realm.getTags(),
+        metadata: realm.metadata
       })),
       bounds: scene ? { width: scene.width, height: scene.height } : null
     };
@@ -509,7 +656,7 @@ export class RealmManager extends EventTarget {
     const tagCounts = new Map<string, number>();
 
     for (const realm of realms) {
-      for (const tag of RealmHelpers.getTags(realm)) {
+      for (const tag of realm.getTags()) {
         const key = tag.split(':')[0];
         tagCounts.set(key, (tagCounts.get(key) || 0) + 1);
       }
@@ -583,10 +730,10 @@ export class RealmManager extends EventTarget {
           realms: realms.map(realm => ({
             id: realm.id,
             name: realm.name,
-            color: realm.color,
-            shapes: realm.shapes,
-            tags: RealmHelpers.getTags(realm),
-            metadata: realm.flags['realms-and-reaches']?.metadata
+            color: realm._region.color,
+            shapes: realm._region.shapes,
+            tags: realm.getTags(),
+            metadata: realm.metadata
           })),
           bounds: { width: canvas?.scene?.width || 4000, height: canvas?.scene?.height || 4000 }
         }

@@ -1,4 +1,4 @@
-import { createFoundryTestConfig } from '@rayners/foundry-dev-tools/configs/vitest.config.js';
+import { createFoundryTestConfig } from '@rayners/foundry-dev-tools/vitest';
 import { resolve } from 'path';
 
 export default createFoundryTestConfig({

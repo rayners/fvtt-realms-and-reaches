@@ -4,7 +4,6 @@
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { RealmManager } from '../src/realm-manager';
-import { RealmData } from '../src/realm-data';
 
 // Mock scene for testing
 const mockRegions = new Map();
@@ -17,6 +16,13 @@ const mockRegions = new Map();
     }
   }
   return results;
+};
+
+// Override the Symbol.iterator to return values instead of entries
+(mockRegions as any)[Symbol.iterator] = function* () {
+  for (const [id, region] of Map.prototype.entries.call(this)) {
+    yield region;
+  }
 };
 
 const mockScene = {
@@ -35,12 +41,77 @@ const mockScene = {
         name: regionData.name || 'Test Region',
         flags: regionData.flags || {},
         shapes: regionData.shapes || [],
-        getFlag: vi.fn().mockImplementation((scope, key) => regionData.flags?.[scope]?.[key]),
-        setFlag: vi.fn(),
+        getFlag: vi.fn().mockImplementation((scope, key) => mockRegion.flags?.[scope]?.[key]),
+        setFlag: vi.fn().mockImplementation((scope, key, value) => {
+          if (!mockRegion.flags[scope]) mockRegion.flags[scope] = {};
+          mockRegion.flags[scope][key] = value;
+        }),
         unsetFlag: vi.fn(),
         update: vi.fn(),
-        delete: vi.fn(),
-        testPoint: vi.fn(() => false)
+        delete: vi.fn().mockImplementation(() => {
+          mockRegions.delete(mockRegion.id);
+        }),
+        testPoint: vi.fn((point: {x: number, y: number}, threshold?: number) => {
+          // Simple point-in-bounds test for mock
+          if (!regionData.shapes || regionData.shapes.length === 0) {
+            return false;
+          }
+          const shape = regionData.shapes[0];
+          
+          if (shape.type === 'polygon') {
+            // Simple polygon test - assume it's a square for testing
+            const points = shape.points || [];
+            if (points.length >= 8) {
+              const minX = Math.min(points[0], points[2], points[4], points[6]);
+              const maxX = Math.max(points[0], points[2], points[4], points[6]);
+              const minY = Math.min(points[1], points[3], points[5], points[7]);
+              const maxY = Math.max(points[1], points[3], points[5], points[7]);
+              return point.x >= minX && point.x <= maxX && point.y >= minY && point.y <= maxY;
+            }
+          } else if (shape.type === 'ellipse') {
+            // Circle/ellipse test
+            const dx = point.x - shape.x;
+            const dy = point.y - shape.y;
+            const rx = shape.radiusX || 0;
+            const ry = shape.radiusY || 0;
+            return (dx * dx) / (rx * rx) + (dy * dy) / (ry * ry) <= 1;
+          } else if (shape.type === 'rectangle') {
+            // Rectangle test
+            const halfWidth = shape.width / 2;
+            const halfHeight = shape.height / 2;
+            const centerX = shape.x + halfWidth;
+            const centerY = shape.y + halfHeight;
+            return point.x >= shape.x && point.x <= shape.x + shape.width &&
+                   point.y >= shape.y && point.y <= shape.y + shape.height;
+          }
+          return false;
+        }),
+        bounds: (() => {
+          // Calculate bounds from shapes
+          if (!regionData.shapes || regionData.shapes.length === 0) {
+            return { x: 0, y: 0, width: 0, height: 0 };
+          }
+          const shape = regionData.shapes[0];
+          
+          if (shape.type === 'polygon' && shape.points) {
+            const points = shape.points;
+            if (points.length >= 8) {
+              const minX = Math.min(points[0], points[2], points[4], points[6]);
+              const maxX = Math.max(points[0], points[2], points[4], points[6]);
+              const minY = Math.min(points[1], points[3], points[5], points[7]);
+              const maxY = Math.max(points[1], points[3], points[5], points[7]);
+              return { x: minX, y: minY, width: maxX - minX, height: maxY - minY };
+            }
+          } else if (shape.type === 'ellipse') {
+            const rx = shape.radiusX || 0;
+            const ry = shape.radiusY || 0;
+            return { x: shape.x - rx, y: shape.y - ry, width: rx * 2, height: ry * 2 };
+          } else if (shape.type === 'rectangle') {
+            return { x: shape.x, y: shape.y, width: shape.width, height: shape.height };
+          }
+          
+          return { x: 0, y: 0, width: 0, height: 0 };
+        })()
       };
       mockRegions.set(mockRegion.id, mockRegion);
       return mockRegion;
@@ -56,7 +127,7 @@ const mockScene = {
 // Mock game globals
 global.game = {
   ...global.game,
-  scenes: new Map([['test-scene', mockScene]]),
+  scenes: new Map([['test-scene', mockScene], ['global', mockScene]]),
   settings: {
     get: vi.fn(() => true) // Auto-save enabled
   },
@@ -72,7 +143,7 @@ global.canvas = {
 
 describe('RealmManager', () => {
   let manager: RealmManager;
-  let testRealm: RealmData;
+  let testRealmData: any;
 
   beforeEach(async () => {
     vi.clearAllMocks();
@@ -86,14 +157,14 @@ describe('RealmManager', () => {
     // Clear any existing data
     await manager.clearAll();
 
-    testRealm = new RealmData({
+    testRealmData = {
       name: 'Test Realm',
       geometry: {
         type: 'polygon',
         points: [0, 0, 100, 0, 100, 100, 0, 100]
       },
       tags: ['biome:forest', 'terrain:dense']
-    });
+    };
   });
 
   describe('Instance Management', () => {
@@ -133,24 +204,26 @@ describe('RealmManager', () => {
 
       // Should be retrievable
       const retrieved = manager.getRealm(created.id);
-      expect(retrieved).toBe(created);
+      expect(retrieved!.id).toBe(created.id);
+      expect(retrieved!.name).toBe(created.name);
     });
 
     it('should update realms', async () => {
-      const created = await manager.createRealm(testRealm);
+      const created = await manager.createRealm(testRealmData);
       const originalModified = created.metadata.modified;
 
       // Small delay to ensure timestamp difference
-      await new Promise(resolve => setTimeout(resolve, 1));
+      await new Promise(resolve => setTimeout(resolve, 10));
 
-      created.name = 'Updated Name';
-      await manager.updateRealm(created);
+      await manager.updateRealm(created._region);
 
-      expect(created.metadata.modified).not.toBe(originalModified);
+      // Re-fetch to see updated metadata
+      const updated = manager.getRealm(created.id);
+      expect(updated!.metadata.modified).not.toBe(originalModified);
     });
 
     it('should delete realms', async () => {
-      const created = await manager.createRealm(testRealm);
+      const created = await manager.createRealm(testRealmData);
       const deleted = await manager.deleteRealm(created.id);
 
       expect(deleted).toBe(true);
@@ -167,7 +240,7 @@ describe('RealmManager', () => {
         eventReceived = true;
       });
 
-      await manager.createRealm(testRealm);
+      await manager.createRealm(testRealmData);
       expect(eventReceived).toBe(true);
     });
   });
@@ -246,55 +319,29 @@ describe('RealmManager', () => {
 
   describe('Data Persistence', () => {
     it('should save to scene flags', async () => {
-      await manager.createRealm(testRealm);
+      await manager.createRealm(testRealmData);
       await manager.saveToScene();
 
-      expect(mockScene.setFlag).toHaveBeenCalledWith(
-        'realms-and-reaches',
-        'realms',
-        expect.objectContaining({
-          version: '1.0.0',
-          realms: expect.any(Object)
-        })
-      );
+      // RegionDocuments auto-persist, so setFlag should not be called
+      // saveToScene just dispatches events for compatibility
+      expect(mockScene.setFlag).not.toHaveBeenCalled();
     });
 
     it('should load from scene flags', async () => {
-      const sceneData = {
-        version: '1.0.0',
-        realms: {
-          [testRealm.id]: testRealm.toObject()
-        },
-        metadata: {
-          created: new Date().toISOString(),
-          modified: new Date().toISOString(),
-          author: 'Test User'
-        }
-      };
-
-      mockScene.getFlag.mockReturnValue(sceneData);
+      // Create a realm and verify it can be loaded
+      const created = await manager.createRealm(testRealmData);
 
       await manager.loadFromScene();
 
-      const loadedRealm = manager.getRealm(testRealm.id);
+      const loadedRealm = manager.getRealm(created.id);
       expect(loadedRealm).toBeDefined();
-      expect(loadedRealm!.name).toBe(testRealm.name);
+      expect(loadedRealm!.name).toBe(created.name);
     });
 
     it('should handle loading errors gracefully', async () => {
-      const corruptData = {
-        version: '1.0.0',
-        realms: {
-          'bad-realm': { invalid: 'data' }
-        }
-      };
-
-      mockScene.getFlag.mockReturnValue(corruptData);
-      console.warn = vi.fn(); // Mock console.warn
-
+      // Since RegionDocuments are loaded automatically by Foundry,
+      // this test now just verifies that loadFromScene doesn't throw
       await manager.loadFromScene();
-
-      expect(console.warn).toHaveBeenCalled();
       expect(manager.getAllRealms().length).toBe(0);
     });
 
@@ -305,8 +352,10 @@ describe('RealmManager', () => {
   });
 
   describe('Export/Import', () => {
+    let createdRealm: any;
+    
     beforeEach(async () => {
-      await manager.createRealm(testRealm);
+      createdRealm = await manager.createRealm(testRealmData);
     });
 
     it('should export data correctly', () => {
@@ -315,7 +364,7 @@ describe('RealmManager', () => {
       expect(exportData.format).toBe('realms-and-reaches-v1');
       expect(exportData.metadata).toBeDefined();
       expect(exportData.realms).toHaveLength(1);
-      expect(exportData.realms[0].id).toBe(testRealm.id);
+      expect(exportData.realms[0].id).toBe(createdRealm.id);
     });
 
     it('should import data correctly', async () => {
@@ -326,7 +375,7 @@ describe('RealmManager', () => {
       const importCount = await manager.importData(exportData);
 
       expect(importCount).toBe(1);
-      expect(manager.getRealm(testRealm.id)).toBeDefined();
+      expect(manager.getRealm(createdRealm.id)).toBeDefined();
     });
 
     it('should handle ID conflicts during import', async () => {
@@ -400,7 +449,7 @@ describe('RealmManager', () => {
     it('should not persist to scene', async () => {
       const globalManager = RealmManager.getGlobalInstance();
 
-      await globalManager.createRealm(testRealm);
+      await globalManager.createRealm(testRealmData);
       await globalManager.saveToScene(); // Should not throw or call setFlag
 
       expect(mockScene.setFlag).not.toHaveBeenCalled();
