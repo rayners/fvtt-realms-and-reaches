@@ -32,7 +32,7 @@
     "@types/jquery": "^3.5.30",
     "eslint": "^9.28.0",
     "jsdom": "^26.1.0",
-    "prettier": "^3.5.3",
+    "prettier": "^3.6.0",
     "rollup": "^4.42.0",
     "sass": "^1.62.0",
     "tslib": "^2.5.0",
